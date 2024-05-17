@@ -22,21 +22,6 @@ enum ConfigType {
 contract L1BlockInterop is L1Block {
     using EnumerableSetLib for EnumerableSetLib.Uint256Set;
 
-    /// @notice Error when a chain ID is not in the interop dependency set.
-    error NotDependency();
-
-    /// @notice Error when the interop dependency set size is too large.
-    error DependencySetSizeTooLarge();
-
-    /// @notice Error when the chain's chain ID is attempted to be removed from the interop dependency set.
-    error CantRemovedChainId();
-
-    /// @notice Event emitted when a new dependency is added to the interop dependency set.
-    event DependencyAdded(uint256 indexed chainId);
-
-    /// @notice Event emitted when a dependency is removed from the interop dependency set.
-    event DependencyRemoved(uint256 indexed chainId);
-
     /// @notice The interop dependency set, containing the chain IDs in it.
     EnumerableSetLib.Uint256Set public dependencySet;
 
