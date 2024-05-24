@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"math/rand"
 
+	"github.com/ethereum-optimism/optimism/op-proposer/bindings"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -351,4 +352,18 @@ func RandomOutputV0(rng *rand.Rand) *eth.OutputV0 {
 		MessagePasserStorageRoot: eth.Bytes32(RandomHash(rng)),
 		BlockHash:                RandomHash(rng),
 	}
+}
+
+func RandomEOTSInfos(rng *rand.Rand) []bindings.TypesEOTSInfo {
+	// Generate a random size for the array within the range of 1 to 5
+	size := rng.Intn(5) + 1
+	eotsInfos := make([]bindings.TypesEOTSInfo, size)
+	for i := 0; i < size; i++ {
+		eotsInfos[i] = bindings.TypesEOTSInfo{
+			FpBtcPk:     eth.Bytes32(RandomHash(rng)),
+			PubRand:     eth.Bytes32(RandomHash(rng)),
+			FinalitySig: eth.Bytes32(RandomHash(rng)),
+		}
+	}
+	return eotsInfos
 }

@@ -251,7 +251,8 @@ func (p *L2Proposer) ActMakeProposalTx(t Testing) {
 		txData, _, err = p.driver.ProposeL2OutputDGFTxData(output)
 		require.NoError(t, err)
 	} else {
-		txData, err = p.driver.ProposeL2OutputTxData(output)
+		cosumerId, err := p.driver.ConstructConsumerID(t.Ctx())
+		txData, err = p.driver.ProposeL2OutputTxData(output, cosumerId)
 		require.NoError(t, err)
 	}
 
