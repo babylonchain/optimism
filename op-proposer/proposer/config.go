@@ -26,6 +26,9 @@ type CLIConfig struct {
 	// RollupRpc is the HTTP provider URL for the rollup node. A comma-separated list enables the active rollup provider.
 	RollupRpc string
 
+	// AggregatorRpc is the RPC URL for the EOTS aggregator.
+	AggregatorRpc string
+
 	// L2OOAddress is the L2OutputOracle contract address.
 	L2OOAddress string
 
@@ -97,11 +100,12 @@ func (c *CLIConfig) Check() error {
 func NewConfig(ctx *cli.Context) *CLIConfig {
 	return &CLIConfig{
 		// Required Flags
-		L1EthRpc:     ctx.String(flags.L1EthRpcFlag.Name),
-		RollupRpc:    ctx.String(flags.RollupRpcFlag.Name),
-		L2OOAddress:  ctx.String(flags.L2OOAddressFlag.Name),
-		PollInterval: ctx.Duration(flags.PollIntervalFlag.Name),
-		TxMgrConfig:  txmgr.ReadCLIConfig(ctx),
+		L1EthRpc:      ctx.String(flags.L1EthRpcFlag.Name),
+		RollupRpc:     ctx.String(flags.RollupRpcFlag.Name),
+		AggregatorRpc: ctx.String(flags.AggregatorRpcFlag.Name),
+		L2OOAddress:   ctx.String(flags.L2OOAddressFlag.Name),
+		PollInterval:  ctx.Duration(flags.PollIntervalFlag.Name),
+		TxMgrConfig:   txmgr.ReadCLIConfig(ctx),
 		// Optional Flags
 		AllowNonFinalized:            ctx.Bool(flags.AllowNonFinalizedFlag.Name),
 		RPCConfig:                    oprpc.ReadCLIConfig(ctx),

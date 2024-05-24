@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	eotsclient "github.com/babylonchain/eots-aggregator/service/client"
 	"github.com/ethereum-optimism/optimism/op-proposer/metrics"
 	"github.com/ethereum-optimism/optimism/op-proposer/proposer/rpc"
 	opservice "github.com/ethereum-optimism/optimism/op-service"
@@ -57,6 +58,7 @@ type ProposerService struct {
 	TxManager      txmgr.TxManager
 	L1Client       *ethclient.Client
 	RollupProvider dial.RollupProvider
+	EotsAggClient  *eotsclient.EotsAggregatorGRpcClient
 
 	driver *L2OutputSubmitter
 
@@ -139,6 +141,12 @@ func (ps *ProposerService) initRPCClients(ctx context.Context, cfg *CLIConfig) e
 		return fmt.Errorf("failed to build L2 endpoint provider: %w", err)
 	}
 	ps.RollupProvider = rollupProvider
+
+	eotsAggClient, err := eotsclient.NewEotsAggregatorGRpcClient(cfg.AggregatorRpc)
+	if err != nil {
+		return fmt.Errorf("failed to create EOTS aggregator client : %w", err)
+	}
+	ps.EotsAggClient = eotsAggClient
 	return nil
 }
 
@@ -231,6 +239,7 @@ func (ps *ProposerService) initDriver() error {
 		Txmgr:          ps.TxManager,
 		L1Client:       ps.L1Client,
 		RollupProvider: ps.RollupProvider,
+		EotsAggClient:  ps.EotsAggClient,
 	})
 	if err != nil {
 		return err
@@ -325,6 +334,10 @@ func (ps *ProposerService) Stop(ctx context.Context) error {
 
 	if ps.RollupProvider != nil {
 		ps.RollupProvider.Close()
+	}
+
+	if ps.EotsAggClient != nil {
+		ps.EotsAggClient.Close()
 	}
 
 	if result == nil {

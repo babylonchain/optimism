@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	eotsclient "github.com/babylonchain/eots-aggregator/service/client"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -54,6 +55,7 @@ type DriverSetup struct {
 
 	// RollupProvider's RollupClient() is used to retrieve output roots from
 	RollupProvider dial.RollupProvider
+	EotsAggClient  *eotsclient.EotsAggregatorGRpcClient
 }
 
 // L2OutputSubmitter is responsible for proposing outputs
@@ -303,18 +305,52 @@ func (l *L2OutputSubmitter) FetchOutput(ctx context.Context, block *big.Int) (*e
 }
 
 // ProposeL2OutputTxData creates the transaction data for the ProposeL2Output function
-func (l *L2OutputSubmitter) ProposeL2OutputTxData(output *eth.OutputResponse) ([]byte, error) {
-	return proposeL2OutputTxData(l.l2ooABI, output)
+func (l *L2OutputSubmitter) ProposeL2OutputTxData(output *eth.OutputResponse, consumerId string) ([]byte, error) {
+	// fetch pub rand and finality signature from the EOTS aggregator
+	res, err := l.EotsAggClient.GetEOTSInfos(int64(output.BlockRef.Number), consumerId)
+	if err != nil {
+		return nil, err
+	}
+	var eotsInfos []bindings.TypesEOTSInfo
+	for _, ptr := range res {
+		if ptr != nil {
+			item := bindings.TypesEOTSInfo{
+				FpBtcPk:     ptr.FinalitySig,
+				PubRand:     ptr.PubRand,
+				FinalitySig: ptr.FinalitySig,
+			}
+			eotsInfos = append(eotsInfos, item)
+		}
+	}
+	return proposeL2OutputTxData(l.l2ooABI, output, eotsInfos)
 }
 
 // proposeL2OutputTxData creates the transaction data for the ProposeL2Output function
-func proposeL2OutputTxData(abi *abi.ABI, output *eth.OutputResponse) ([]byte, error) {
+func proposeL2OutputTxData(abi *abi.ABI, output *eth.OutputResponse, eotsInfos []bindings.TypesEOTSInfo) ([]byte, error) {
 	return abi.Pack(
 		"proposeL2Output",
 		output.OutputRoot,
 		new(big.Int).SetUint64(output.BlockRef.Number),
 		output.Status.CurrentL1.Hash,
-		new(big.Int).SetUint64(output.Status.CurrentL1.Number))
+		new(big.Int).SetUint64(output.Status.CurrentL1.Number), eotsInfos)
+}
+
+// ConstructConsumerID constructs a consumer ID
+// following the convention 'op-stack-l2-<L2 ChainID>'.
+func (l *L2OutputSubmitter) ConstructConsumerID(ctx context.Context) (string, error) {
+	cCtx, cancel := context.WithTimeout(ctx, l.Cfg.NetworkTimeout)
+	defer cancel()
+	rollupClient, err := l.RollupProvider.RollupClient(cCtx)
+	if err != nil {
+		l.Log.Error("proposer unable to get rollup client", "err", err)
+		return "", err
+	}
+	rollupCfg, err := rollupClient.RollupConfig(cCtx)
+	if err != nil {
+		l.Log.Error("proposer unable to get rollup config", "err", err)
+		return "", err
+	}
+	return fmt.Sprintf("op-stack-l2-%s", rollupCfg.L2ChainID.String()), nil
 }
 
 func (l *L2OutputSubmitter) ProposeL2OutputDGFTxData(output *eth.OutputResponse) ([]byte, *big.Int, error) {
@@ -385,7 +421,11 @@ func (l *L2OutputSubmitter) sendTransaction(ctx context.Context, output *eth.Out
 			return err
 		}
 	} else {
-		data, err := l.ProposeL2OutputTxData(output)
+		consumerId, err := l.ConstructConsumerID(ctx)
+		if err != nil {
+			return err
+		}
+		data, err := l.ProposeL2OutputTxData(output, consumerId)
 		if err != nil {
 			return err
 		}

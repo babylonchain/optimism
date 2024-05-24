@@ -77,7 +77,8 @@ func TestManualABIPacking(t *testing.T) {
 
 	output := testutils.RandomOutputResponse(rng)
 
-	txData, err := proposeL2OutputTxData(l2ooAbi, output)
+	eotsInfos := testutils.RandomEOTSInfos(rng)
+	txData, err := proposeL2OutputTxData(l2ooAbi, output, eotsInfos)
 	require.NoError(t, err)
 
 	// set a gas limit to disable gas estimation. The invariants that the L2OO tries to uphold
@@ -88,7 +89,7 @@ func TestManualABIPacking(t *testing.T) {
 		output.OutputRoot,
 		new(big.Int).SetUint64(output.BlockRef.Number),
 		output.Status.CurrentL1.Hash,
-		new(big.Int).SetUint64(output.Status.CurrentL1.Number))
+		new(big.Int).SetUint64(output.Status.CurrentL1.Number), eotsInfos)
 	require.NoError(t, err)
 
 	require.Equal(t, txData, tx.Data())
