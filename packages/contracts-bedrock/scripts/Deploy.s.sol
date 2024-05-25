@@ -7,6 +7,8 @@ import { Script } from "forge-std/Script.sol";
 import { console2 as console } from "forge-std/console2.sol";
 import { stdJson } from "forge-std/StdJson.sol";
 
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+
 import { GnosisSafe as Safe } from "safe-contracts/GnosisSafe.sol";
 import { OwnerManager } from "safe-contracts/base/OwnerManager.sol";
 import { GnosisSafeProxyFactory as SafeProxyFactory } from "safe-contracts/proxies/GnosisSafeProxyFactory.sol";
@@ -66,6 +68,7 @@ import { ForgeArtifacts } from "scripts/ForgeArtifacts.sol";
 ///         This contract must not have constructor logic because it is set into state using `etch`.
 contract Deploy is Deployer {
     using stdJson for string;
+    using Strings for uint256;
 
     /// @notice FaultDisputeGameParams is a struct that contains the parameters necessary to call
     ///         the function _setFaultGameImplementation. This struct exists because the EVM needs
@@ -1196,7 +1199,8 @@ contract Deploy is Deployer {
                     cfg.l2OutputOracleStartingTimestamp(),
                     cfg.l2OutputOracleProposer(),
                     cfg.l2OutputOracleChallenger(),
-                    cfg.finalizationPeriodSeconds()
+                    cfg.finalizationPeriodSeconds(),
+                    string.concat("op-stack-l2-", cfg.l2ChainID().toString())
                 )
             )
         });

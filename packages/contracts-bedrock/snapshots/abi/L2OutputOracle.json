@@ -71,6 +71,19 @@
   },
   {
     "inputs": [],
+    "name": "babylonConsumerId",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "challenger",
     "outputs": [
       {
@@ -254,6 +267,11 @@
         "internalType": "uint256",
         "name": "_finalizationPeriodSeconds",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_babylonConsumerId",
+        "type": "string"
       }
     ],
     "name": "initialize",

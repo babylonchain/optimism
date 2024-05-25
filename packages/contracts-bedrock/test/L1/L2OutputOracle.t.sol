@@ -7,6 +7,8 @@ import { CommonTest } from "test/setup/CommonTest.sol";
 import { NextImpl } from "test/mocks/NextImpl.sol";
 import { EIP1967Helper } from "test/mocks/EIP1967Helper.sol";
 
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+
 // Libraries
 import { Types } from "src/libraries/Types.sol";
 import { Constants } from "src/libraries/Constants.sol";
@@ -406,6 +408,8 @@ contract L2OutputOracle_deleteOutputs_Test is CommonTest {
 }
 
 contract L2OutputOracleUpgradeable_Test is CommonTest {
+    using Strings for uint256;
+
     /// @dev Tests that the proxy can be successfully upgraded.
     function test_upgrading_succeeds() external {
         Proxy proxy = Proxy(deploy.mustGetAddress("L2OutputOracleProxy"));
@@ -438,6 +442,9 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
         address proposer = deploy.cfg().l2OutputOracleProposer();
         address challenger = deploy.cfg().l2OutputOracleChallenger();
         uint256 finalizationPeriodSeconds = deploy.cfg().finalizationPeriodSeconds();
+        string memory babylonConsumerId = string.concat(
+            "op-stack-l2-", deploy.cfg().l2ChainID().toString()
+        );
 
         vm.expectRevert("L2OutputOracle: submission interval must be greater than 0");
         l2OutputOracle.initialize({
@@ -447,7 +454,8 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
             _startingTimestamp: startingTimestamp,
             _proposer: proposer,
             _challenger: challenger,
-            _finalizationPeriodSeconds: finalizationPeriodSeconds
+            _finalizationPeriodSeconds: finalizationPeriodSeconds,
+            _babylonConsumerId: babylonConsumerId
         });
     }
 
@@ -463,6 +471,9 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
         address proposer = deploy.cfg().l2OutputOracleProposer();
         address challenger = deploy.cfg().l2OutputOracleChallenger();
         uint256 finalizationPeriodSeconds = deploy.cfg().finalizationPeriodSeconds();
+        string memory babylonConsumerId = string.concat(
+            "op-stack-l2-", deploy.cfg().l2ChainID().toString()
+        );
 
         vm.expectRevert("L2OutputOracle: L2 block time must be greater than 0");
         l2OutputOracle.initialize({
@@ -472,7 +483,8 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
             _startingTimestamp: startingTimestamp,
             _proposer: proposer,
             _challenger: challenger,
-            _finalizationPeriodSeconds: finalizationPeriodSeconds
+            _finalizationPeriodSeconds: finalizationPeriodSeconds,
+            _babylonConsumerId: babylonConsumerId
         });
     }
 
@@ -488,6 +500,9 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
         address proposer = deploy.cfg().l2OutputOracleProposer();
         address challenger = deploy.cfg().l2OutputOracleChallenger();
         uint256 finalizationPeriodSeconds = deploy.cfg().finalizationPeriodSeconds();
+        string memory babylonConsumerId = string.concat(
+            "op-stack-l2-", deploy.cfg().l2ChainID().toString()
+        );
 
         vm.expectRevert("L2OutputOracle: starting L2 timestamp must be less than current time");
         l2OutputOracle.initialize({
@@ -497,7 +512,8 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
             _startingTimestamp: block.timestamp + 1,
             _proposer: proposer,
             _challenger: challenger,
-            _finalizationPeriodSeconds: finalizationPeriodSeconds
+            _finalizationPeriodSeconds: finalizationPeriodSeconds,
+            _babylonConsumerId: babylonConsumerId
         });
     }
 }
