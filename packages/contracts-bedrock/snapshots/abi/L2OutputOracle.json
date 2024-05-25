@@ -71,12 +71,12 @@
   },
   {
     "inputs": [],
-    "name": "babylonConsumerId",
+    "name": "babylonController",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "address",
         "name": "",
-        "type": "string"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -269,9 +269,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "string",
-        "name": "_babylonConsumerId",
-        "type": "string"
+        "internalType": "address",
+        "name": "_babylonController",
+        "type": "address"
       }
     ],
     "name": "initialize",

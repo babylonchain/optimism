@@ -41,9 +41,9 @@ contract L2OutputOracle is Initializable, ISemver {
     /// @custom:network-specific
     uint256 public finalizationPeriodSeconds;
 
-    /// @notice The consumer chain ID that represents this rollup registered on the Babylon chain.
+    /// @notice The address of the Babylon Controller contract. Can be updated via upgrade.
     /// @custom:network-specific
-    string public babylonConsumerId;
+    address public babylonController;
 
     /// @notice Emitted when an output is proposed.
     /// @param outputRoot    The output root.
@@ -74,7 +74,7 @@ contract L2OutputOracle is Initializable, ISemver {
             _proposer: address(0),
             _challenger: address(0),
             _finalizationPeriodSeconds: 0,
-            _babylonConsumerId: ""
+            _babylonController: address(0)
         });
     }
 
@@ -87,8 +87,7 @@ contract L2OutputOracle is Initializable, ISemver {
     /// @param _challenger          The address of the challenger.
     /// @param _finalizationPeriodSeconds The minimum time (in seconds) that must elapse before a withdrawal
     ///                                   can be finalized.
-    /// @param _babylonConsumerId   The consumer chain ID that represents this rollup registered on
-    ///                             the Babylon chain.
+    /// @param _babylonController   The address of the Babylon Controller contract.
     function initialize(
         uint256 _submissionInterval,
         uint256 _l2BlockTime,
@@ -97,7 +96,7 @@ contract L2OutputOracle is Initializable, ISemver {
         address _proposer,
         address _challenger,
         uint256 _finalizationPeriodSeconds,
-        string memory _babylonConsumerId
+        address _babylonController
     )
         public
         initializer
@@ -116,7 +115,7 @@ contract L2OutputOracle is Initializable, ISemver {
         proposer = _proposer;
         challenger = _challenger;
         finalizationPeriodSeconds = _finalizationPeriodSeconds;
-        babylonConsumerId = _babylonConsumerId;
+        babylonController = _babylonController;
     }
 
     /// @notice Getter for the submissionInterval.

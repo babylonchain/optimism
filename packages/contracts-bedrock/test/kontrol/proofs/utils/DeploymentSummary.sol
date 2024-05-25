@@ -19,7 +19,7 @@ contract DeploymentSummary is DeploymentSummaryCode {
     address internal constant l1ERC721BridgeProxyAddress = 0xD31598c909d9C935a9e35bA70d9a3DD47d4D5865;
     address internal constant l1StandardBridgeAddress = 0x04c50B398Cd4182428E79f7186b7C919cF17e86F;
     address internal constant l1StandardBridgeProxyAddress = 0xDeF3bca8c80064589E6787477FFa7Dd616B5574F;
-    address internal constant l2OutputOracleAddress = 0x1081819605643dF9D7F8beD809d3a7952BE97077;
+    address internal constant l2OutputOracleAddress = 0xbb40F5B141B2219181DFd804826d5b8233c8B156;
     address internal constant l2OutputOracleProxyAddress = 0x0c8b5822b6e02CDa722174F19A1439A7495a3fA6;
     address internal constant optimismPortalAddress = 0xbdD90485FCbcac869D5b5752179815a3103d8131;
     address internal constant optimismPortalProxyAddress = 0x1c23A6d89F95ef3148BCDA8E242cAb145bf9c0E4;
