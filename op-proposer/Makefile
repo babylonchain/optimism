@@ -48,4 +48,4 @@ bindings-upgrades:
 	clean \
 	op-proposer \
 	test \
-    bindings-upgrades
+	bindings-upgrades
