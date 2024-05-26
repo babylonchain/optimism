@@ -30,6 +30,7 @@ contract DeployConfig is Script {
     uint256 public l2OutputOracleStartingBlockNumber;
     address public l2OutputOracleProposer;
     address public l2OutputOracleChallenger;
+    address public l2OutputOracleBabylonController;
     uint256 public finalizationPeriodSeconds;
     bool public fundDevAccounts;
     address public proxyAdminOwner;
@@ -103,6 +104,7 @@ contract DeployConfig is Script {
         l2OutputOracleStartingBlockNumber = stdJson.readUint(_json, "$.l2OutputOracleStartingBlockNumber");
         l2OutputOracleProposer = stdJson.readAddress(_json, "$.l2OutputOracleProposer");
         l2OutputOracleChallenger = stdJson.readAddress(_json, "$.l2OutputOracleChallenger");
+        l2OutputOracleBabylonController = stdJson.readAddress(_json, "$.l2OutputOracleBabylonController");
         finalizationPeriodSeconds = stdJson.readUint(_json, "$.finalizationPeriodSeconds");
         fundDevAccounts = _readOr(_json, "$.fundDevAccounts", false);
         proxyAdminOwner = stdJson.readAddress(_json, "$.proxyAdminOwner");

@@ -406,6 +406,7 @@ contract L2OutputOracle_deleteOutputs_Test is CommonTest {
 }
 
 contract L2OutputOracleUpgradeable_Test is CommonTest {
+
     /// @dev Tests that the proxy can be successfully upgraded.
     function test_upgrading_succeeds() external {
         Proxy proxy = Proxy(deploy.mustGetAddress("L2OutputOracleProxy"));
@@ -437,6 +438,7 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
         uint256 startingTimestamp = deploy.cfg().l2OutputOracleStartingTimestamp();
         address proposer = deploy.cfg().l2OutputOracleProposer();
         address challenger = deploy.cfg().l2OutputOracleChallenger();
+        address babylonController = deploy.cfg().l2OutputOracleBabylonController();
         uint256 finalizationPeriodSeconds = deploy.cfg().finalizationPeriodSeconds();
 
         vm.expectRevert("L2OutputOracle: submission interval must be greater than 0");
@@ -447,7 +449,8 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
             _startingTimestamp: startingTimestamp,
             _proposer: proposer,
             _challenger: challenger,
-            _finalizationPeriodSeconds: finalizationPeriodSeconds
+            _finalizationPeriodSeconds: finalizationPeriodSeconds,
+            _babylonController: babylonController
         });
     }
 
@@ -462,6 +465,7 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
         uint256 startingTimestamp = deploy.cfg().l2OutputOracleStartingTimestamp();
         address proposer = deploy.cfg().l2OutputOracleProposer();
         address challenger = deploy.cfg().l2OutputOracleChallenger();
+        address babylonController = deploy.cfg().l2OutputOracleBabylonController();
         uint256 finalizationPeriodSeconds = deploy.cfg().finalizationPeriodSeconds();
 
         vm.expectRevert("L2OutputOracle: L2 block time must be greater than 0");
@@ -472,7 +476,8 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
             _startingTimestamp: startingTimestamp,
             _proposer: proposer,
             _challenger: challenger,
-            _finalizationPeriodSeconds: finalizationPeriodSeconds
+            _finalizationPeriodSeconds: finalizationPeriodSeconds,
+            _babylonController: babylonController
         });
     }
 
@@ -487,6 +492,7 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
         uint256 startingBlockNumber = deploy.cfg().l2OutputOracleStartingBlockNumber();
         address proposer = deploy.cfg().l2OutputOracleProposer();
         address challenger = deploy.cfg().l2OutputOracleChallenger();
+        address babylonController = deploy.cfg().l2OutputOracleBabylonController();
         uint256 finalizationPeriodSeconds = deploy.cfg().finalizationPeriodSeconds();
 
         vm.expectRevert("L2OutputOracle: starting L2 timestamp must be less than current time");
@@ -497,7 +503,8 @@ contract L2OutputOracleUpgradeable_Test is CommonTest {
             _startingTimestamp: block.timestamp + 1,
             _proposer: proposer,
             _challenger: challenger,
-            _finalizationPeriodSeconds: finalizationPeriodSeconds
+            _finalizationPeriodSeconds: finalizationPeriodSeconds,
+            _babylonController: babylonController
         });
     }
 }

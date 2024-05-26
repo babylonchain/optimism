@@ -71,6 +71,19 @@
   },
   {
     "inputs": [],
+    "name": "babylonController",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "challenger",
     "outputs": [
       {
@@ -254,6 +267,11 @@
         "internalType": "uint256",
         "name": "_finalizationPeriodSeconds",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_babylonController",
+        "type": "address"
       }
     ],
     "name": "initialize",
