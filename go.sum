@@ -299,6 +299,8 @@ github.com/babylonchain/babylon-private v0.0.0-20240520231120-6364210f7701 h1:WC
 github.com/babylonchain/babylon-private v0.0.0-20240520231120-6364210f7701/go.mod h1:Ku+LtNN6bPMU3H58PiTiFvIWUvEcASigN7kQP87Eg/o=
 github.com/babylonchain/eots-aggregator v0.0.0-20240524153939-559eae0b9f58 h1:lGVHFjix/UCIs7zbxccvrtW6mcTT74B28t2hxW8Pn0U=
 github.com/babylonchain/eots-aggregator v0.0.0-20240524153939-559eae0b9f58/go.mod h1:sdnh6v/ubixtlFv6SK3JyqMA7Tzvd3ZvGckvWhAA4OQ=
+github.com/babylonchain/eots-aggregator v0.0.0-20240526174427-16954dc75d29 h1:+MScUZhDCgE6kxjONYq+Ph6blA/wXMNvNmmTZ9HUUIA=
+github.com/babylonchain/eots-aggregator v0.0.0-20240526174427-16954dc75d29/go.mod h1:sdnh6v/ubixtlFv6SK3JyqMA7Tzvd3ZvGckvWhAA4OQ=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.5 h1:VvXlSJBzZpA/zum6Sj74hxwYI2DIxRWuNIoXAzHZz5o=
