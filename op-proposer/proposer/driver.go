@@ -305,9 +305,13 @@ func (l *L2OutputSubmitter) FetchOutput(ctx context.Context, block *big.Int) (*e
 }
 
 // ProposeL2OutputTxData creates the transaction data for the ProposeL2Output function
-func (l *L2OutputSubmitter) ProposeL2OutputTxData(output *eth.OutputResponse, consumerId string) ([]byte, error) {
+func (l *L2OutputSubmitter) ProposeL2OutputTxData(output *eth.OutputResponse) ([]byte, error) {
+	consumerID, err := l.ConstructConsumerID(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 	// fetch pub rand and finality signature from the EOTS aggregator
-	res, err := l.EotsAggClient.GetEOTSInfos(int64(output.BlockRef.Number), consumerId)
+	res, err := l.EotsAggClient.GetEOTSInfos(l.ctx, int64(output.BlockRef.Number), consumerID)
 	if err != nil {
 		return nil, err
 	}
@@ -422,11 +426,7 @@ func (l *L2OutputSubmitter) sendTransaction(ctx context.Context, output *eth.Out
 			return err
 		}
 	} else {
-		consumerId, err := l.ConstructConsumerID(ctx)
-		if err != nil {
-			return err
-		}
-		data, err := l.ProposeL2OutputTxData(output, consumerId)
+		data, err := l.ProposeL2OutputTxData(output)
 		if err != nil {
 			return err
 		}

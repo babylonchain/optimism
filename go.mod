@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/DataDog/zstd v1.5.5
 	github.com/andybalholm/brotli v1.1.0
-	github.com/babylonchain/eots-aggregator v0.0.0-20240526174427-16954dc75d29
+	github.com/babylonchain/eots-aggregator v0.0.0-20240527183334-afdd4fb809d5
 	github.com/btcsuite/btcd v0.24.0
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
 	github.com/cockroachdb/pebble v1.1.0

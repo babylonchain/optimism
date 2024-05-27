@@ -142,7 +142,7 @@ func (ps *ProposerService) initRPCClients(ctx context.Context, cfg *CLIConfig) e
 	}
 	ps.RollupProvider = rollupProvider
 
-	eotsAggClient, err := eotsclient.NewEotsAggregatorGRpcClient(cfg.EotsAggregatorRpc)
+	eotsAggClient, err := eotsclient.NewEotsAggregatorGRpcClient(ctx, cfg.EotsAggregatorRpc)
 	if err != nil {
 		return fmt.Errorf("failed to create EOTS aggregator client : %w", err)
 	}
