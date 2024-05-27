@@ -4,6 +4,7 @@ pragma solidity 0.8.15;
 import { CommonTest } from "test/setup/CommonTest.sol";
 import { L2OutputOracle } from "src/L1/L2OutputOracle.sol";
 import { Vm } from "forge-std/Vm.sol";
+import { Types } from "src/libraries/Types.sol";
 
 contract L2OutputOracle_Proposer {
     L2OutputOracle internal oracle;
@@ -25,7 +26,16 @@ contract L2OutputOracle_Proposer {
     {
         // Act as the proposer and propose a new output.
         vm.prank(oracle.PROPOSER());
-        oracle.proposeL2Output(_outputRoot, _l2BlockNumber, _l1BlockHash, _l1BlockNumber);
+
+        Types.EOTSInfo[] memory _eotsInfos = new Types.EOTSInfo[](1);
+        Types.EOTSInfo memory eotsInfo = Types.EOTSInfo({
+            fpBtcPk: keccak256(abi.encode("fpBtcPk")),
+            pubRand: keccak256(abi.encode("pubRand")),
+            pubRandProof: new bytes32[](1),
+            finalitySig: keccak256(abi.encode("finalitySig"))
+        });
+        _eotsInfos[0] = eotsInfo;
+        oracle.proposeL2Output(_outputRoot, _l2BlockNumber, _l1BlockHash, _l1BlockNumber, _eotsInfos);
     }
 }
 

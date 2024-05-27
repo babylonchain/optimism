@@ -72,7 +72,7 @@ contract GasBenchMark_OptimismPortal is CommonTest {
         // Configure the oracle to return the output root we've prepared.
         vm.warp(l2OutputOracle.computeL2Timestamp(_proposedBlockNumber) + 1);
         vm.prank(l2OutputOracle.PROPOSER());
-        l2OutputOracle.proposeL2Output(_outputRoot, _proposedBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(_outputRoot, _proposedBlockNumber, 0, 0, _defaultEotsInfos);
 
         // Warp beyond the finalization period for the block we've proposed.
         vm.warp(
@@ -206,6 +206,6 @@ contract GasBenchMark_L2OutputOracle is CommonTest {
     }
 
     function test_proposeL2Output_benchmark() external {
-        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, 0, 0, _defaultEotsInfos);
     }
 }

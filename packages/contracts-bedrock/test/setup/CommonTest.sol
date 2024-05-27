@@ -6,6 +6,7 @@ import { Setup } from "test/setup/Setup.sol";
 import { Events } from "test/setup/Events.sol";
 import { FFIInterface } from "test/setup/FFIInterface.sol";
 import { Constants } from "src/libraries/Constants.sol";
+import { Types } from "src/libraries/Types.sol";
 import "scripts/DeployConfig.s.sol";
 
 /// @title CommonTest
@@ -22,6 +23,9 @@ contract CommonTest is Test, Setup, Events {
     bool useFaultProofs;
     address customGasToken;
     bool useInteropOverride;
+
+    // Construct default EOTSInfos for the testing
+    Types.EOTSInfo[] _defaultEotsInfos;
 
     function setUp() public virtual override {
         alice = makeAddr("alice");
@@ -64,6 +68,15 @@ contract CommonTest is Test, Setup, Events {
         Setup.L1();
         // Deploy L2
         Setup.L2();
+
+        Types.EOTSInfo memory eotsInfo = Types.EOTSInfo({
+            fpBtcPk: keccak256(abi.encode("fpBtcPk")),
+            pubRand: keccak256(abi.encode("pubRand")),
+            pubRandProof: new bytes32[](1),
+            finalitySig: keccak256(abi.encode("finalitySig"))
+        });
+        _defaultEotsInfos.push(eotsInfo);
+
     }
 
     /// @dev Helper function that wraps `TransactionDeposited` event.
@@ -106,7 +119,7 @@ contract CommonTest is Test, Setup, Events {
 
         address proposer = deploy.cfg().l2OutputOracleProposer();
         vm.prank(proposer);
-        l2OutputOracle.proposeL2Output(proposedOutput2, nextBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(proposedOutput2, nextBlockNumber, 0, 0, _defaultEotsInfos);
     }
 
     function enableFaultProofs() public {

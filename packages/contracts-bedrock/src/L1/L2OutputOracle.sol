@@ -197,7 +197,8 @@ contract L2OutputOracle is Initializable, ISemver {
         bytes32 _outputRoot,
         uint256 _l2BlockNumber,
         bytes32 _l1BlockHash,
-        uint256 _l1BlockNumber
+        uint256 _l1BlockNumber,
+        Types.EOTSInfo[] calldata _eotsInfos
     )
         external
         payable
@@ -229,6 +230,10 @@ contract L2OutputOracle is Initializable, ISemver {
                 blockhash(_l1BlockNumber) == _l1BlockHash,
                 "L2OutputOracle: block hash does not match the hash at the expected height"
             );
+        }
+
+        for (uint i = 0; i < _eotsInfos.length; i++) {
+            require(_eotsInfos[i].fpBtcPk != bytes32(0), "L2OutputOracle: EOTSInfo.fpBtcPk cannot be zero");
         }
 
         emit OutputProposed(_outputRoot, nextOutputIndex(), _l2BlockNumber, block.timestamp);

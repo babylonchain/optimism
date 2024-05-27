@@ -425,7 +425,7 @@ contract OptimismPortal_Test is CommonTest {
         vm.roll(checkpoint);
         vm.warp(l2OutputOracle.computeL2Timestamp(checkpoint) + 1);
         vm.prank(l2OutputOracle.PROPOSER());
-        l2OutputOracle.proposeL2Output(keccak256(abi.encode(2)), checkpoint, 0, 0);
+        l2OutputOracle.proposeL2Output(keccak256(abi.encode(2)), checkpoint, 0, 0, _defaultEotsInfos);
 
         // warp to the final second of the finalization period
         uint256 finalizationHorizon = block.timestamp + l2OutputOracle.FINALIZATION_PERIOD_SECONDS();
@@ -610,7 +610,7 @@ contract OptimismPortal_FinalizeWithdrawal_Test is CommonTest {
         // Configure the oracle to return the output root we've prepared.
         vm.warp(l2OutputOracle.computeL2Timestamp(_proposedBlockNumber) + 1);
         vm.prank(l2OutputOracle.PROPOSER());
-        l2OutputOracle.proposeL2Output(_outputRoot, _proposedBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(_outputRoot, _proposedBlockNumber, 0, 0, _defaultEotsInfos);
 
         // Warp beyond the finalization period for the block we've proposed.
         vm.warp(
@@ -740,7 +740,7 @@ contract OptimismPortal_FinalizeWithdrawal_Test is CommonTest {
         // Propose the same output root again, creating the same output at a different index + l2BlockNumber.
         vm.startPrank(optimismPortal.l2Oracle().PROPOSER());
         optimismPortal.l2Oracle().proposeL2Output(
-            proposal.outputRoot, optimismPortal.l2Oracle().nextBlockNumber(), blockhash(block.number), block.number
+            proposal.outputRoot, optimismPortal.l2Oracle().nextBlockNumber(), blockhash(block.number), block.number, _defaultEotsInfos
         );
         vm.stopPrank();
 

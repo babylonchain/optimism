@@ -365,6 +365,33 @@
         "internalType": "uint256",
         "name": "_l1BlockNumber",
         "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "fpBtcPk",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "pubRand",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32[]",
+            "name": "pubRandProof",
+            "type": "bytes32[]"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "finalitySig",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct Types.EOTSInfo[]",
+        "name": "_eotsInfos",
+        "type": "tuple[]"
       }
     ],
     "name": "proposeL2Output",

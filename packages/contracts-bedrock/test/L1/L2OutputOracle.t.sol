@@ -73,7 +73,7 @@ contract L2OutputOracle_getter_Test is CommonTest {
         // Roll to after the block number we'll propose
         warpToProposeTime(proposedNumber);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(proposedOutput1, proposedNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(proposedOutput1, proposedNumber, 0, 0, _defaultEotsInfos);
         assertEq(l2OutputOracle.latestBlockNumber(), proposedNumber);
     }
 
@@ -83,7 +83,7 @@ contract L2OutputOracle_getter_Test is CommonTest {
         uint256 nextOutputIndex = l2OutputOracle.nextOutputIndex();
         warpToProposeTime(nextBlockNumber);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(proposedOutput1, nextBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(proposedOutput1, nextBlockNumber, 0, 0, _defaultEotsInfos);
 
         Types.OutputProposal memory proposal = l2OutputOracle.getL2Output(nextOutputIndex);
         assertEq(proposal.outputRoot, proposedOutput1);
@@ -101,7 +101,7 @@ contract L2OutputOracle_getter_Test is CommonTest {
         uint256 nextBlockNumber1 = l2OutputOracle.nextBlockNumber();
         warpToProposeTime(nextBlockNumber1);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(output1, nextBlockNumber1, 0, 0);
+        l2OutputOracle.proposeL2Output(output1, nextBlockNumber1, 0, 0, _defaultEotsInfos);
 
         // Querying with exact same block as proposed returns the proposal.
         uint256 index1 = l2OutputOracle.getL2OutputIndexAfter(nextBlockNumber1);
@@ -115,7 +115,7 @@ contract L2OutputOracle_getter_Test is CommonTest {
         uint256 nextBlockNumber1 = l2OutputOracle.nextBlockNumber();
         warpToProposeTime(nextBlockNumber1);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(output1, nextBlockNumber1, 0, 0);
+        l2OutputOracle.proposeL2Output(output1, nextBlockNumber1, 0, 0, _defaultEotsInfos);
 
         // Querying with previous block returns the proposal too.
         uint256 index1 = l2OutputOracle.getL2OutputIndexAfter(nextBlockNumber1 - 1);
@@ -128,25 +128,25 @@ contract L2OutputOracle_getter_Test is CommonTest {
         uint256 nextBlockNumber1 = l2OutputOracle.nextBlockNumber();
         warpToProposeTime(nextBlockNumber1);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(output1, nextBlockNumber1, 0, 0);
+        l2OutputOracle.proposeL2Output(output1, nextBlockNumber1, 0, 0, _defaultEotsInfos);
 
         bytes32 output2 = keccak256(abi.encode(2));
         uint256 nextBlockNumber2 = l2OutputOracle.nextBlockNumber();
         warpToProposeTime(nextBlockNumber2);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(output2, nextBlockNumber2, 0, 0);
+        l2OutputOracle.proposeL2Output(output2, nextBlockNumber2, 0, 0, _defaultEotsInfos);
 
         bytes32 output3 = keccak256(abi.encode(3));
         uint256 nextBlockNumber3 = l2OutputOracle.nextBlockNumber();
         warpToProposeTime(nextBlockNumber3);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(output3, nextBlockNumber3, 0, 0);
+        l2OutputOracle.proposeL2Output(output3, nextBlockNumber3, 0, 0, _defaultEotsInfos);
 
         bytes32 output4 = keccak256(abi.encode(4));
         uint256 nextBlockNumber4 = l2OutputOracle.nextBlockNumber();
         warpToProposeTime(nextBlockNumber4);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(output4, nextBlockNumber4, 0, 0);
+        l2OutputOracle.proposeL2Output(output4, nextBlockNumber4, 0, 0, _defaultEotsInfos);
 
         // Querying with a block number between the first and second proposal
         uint256 index1 = l2OutputOracle.getL2OutputIndexAfter(nextBlockNumber1 + 1);
@@ -216,7 +216,7 @@ contract L2OutputOracle_proposeL2Output_Test is CommonTest {
         uint256 nextBlockNumber = l2OutputOracle.nextBlockNumber();
         warpToProposeTime(nextBlockNumber);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
-        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, prevL1BlockHash, prevL1BlockNumber);
+        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, prevL1BlockHash, prevL1BlockNumber, _defaultEotsInfos);
     }
 
     /// @dev Tests that `proposeL2Output` reverts when called by a party
@@ -227,7 +227,7 @@ contract L2OutputOracle_proposeL2Output_Test is CommonTest {
 
         vm.prank(address(128));
         vm.expectRevert("L2OutputOracle: only the proposer address can propose new outputs");
-        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, 0, 0, _defaultEotsInfos);
     }
 
     /// @dev Tests that `proposeL2Output` reverts when given a zero blockhash.
@@ -237,7 +237,7 @@ contract L2OutputOracle_proposeL2Output_Test is CommonTest {
         warpToProposeTime(nextBlockNumber);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
         vm.expectRevert("L2OutputOracle: L2 output proposal cannot be the zero hash");
-        l2OutputOracle.proposeL2Output(outputToPropose, nextBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(outputToPropose, nextBlockNumber, 0, 0, _defaultEotsInfos);
     }
 
     /// @dev Tests that `proposeL2Output` reverts when given a block number
@@ -247,7 +247,7 @@ contract L2OutputOracle_proposeL2Output_Test is CommonTest {
         warpToProposeTime(nextBlockNumber);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
         vm.expectRevert("L2OutputOracle: block number must be equal to next expected block number");
-        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber - 1, 0, 0);
+        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber - 1, 0, 0, _defaultEotsInfos);
     }
 
     /// @dev Tests that `proposeL2Output` reverts when given a block number
@@ -258,7 +258,7 @@ contract L2OutputOracle_proposeL2Output_Test is CommonTest {
         vm.warp(nextTimestamp);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
         vm.expectRevert("L2OutputOracle: cannot propose L2 output in the future");
-        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, 0, 0, _defaultEotsInfos);
     }
 
     /// @dev Tests that `proposeL2Output` reverts when given a block number
@@ -268,7 +268,7 @@ contract L2OutputOracle_proposeL2Output_Test is CommonTest {
         warpToProposeTime(nextBlockNumber);
         vm.prank(deploy.cfg().l2OutputOracleProposer());
         vm.expectRevert("L2OutputOracle: block hash does not match the hash at the expected height");
-        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, bytes32(uint256(0x01)), block.number);
+        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, bytes32(uint256(0x01)), block.number, _defaultEotsInfos);
     }
 
     /// @dev Tests that `proposeL2Output` reverts when given a block number
@@ -287,7 +287,7 @@ contract L2OutputOracle_proposeL2Output_Test is CommonTest {
 
         // This will fail when foundry no longer returns zerod block hashes
         vm.expectRevert("L2OutputOracle: block hash does not match the hash at the expected height");
-        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, l1BlockHash, l1BlockNumber - 1);
+        l2OutputOracle.proposeL2Output(nonZeroHash, nextBlockNumber, l1BlockHash, l1BlockNumber - 1, _defaultEotsInfos);
     }
 }
 

@@ -113,7 +113,7 @@ contract OptimismPortal_Invariant_Harness is CommonTest {
         // Configure the oracle to return the output root we've prepared.
         vm.warp(l2OutputOracle.computeL2Timestamp(_proposedBlockNumber) + 1);
         vm.prank(l2OutputOracle.PROPOSER());
-        l2OutputOracle.proposeL2Output(_outputRoot, _proposedBlockNumber, 0, 0);
+        l2OutputOracle.proposeL2Output(_outputRoot, _proposedBlockNumber, 0, 0, _defaultEotsInfos);
 
         // Warp beyond the finalization period for the block we've proposed.
         vm.warp(

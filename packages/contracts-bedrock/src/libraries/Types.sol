@@ -67,4 +67,16 @@ library Types {
         uint256 gasLimit;
         bytes data;
     }
+
+    /// @notice Struct representing the EOTS data used for the fast finality.
+    /// @custom:field fpBtcPk       The BTC public key of the finality provider.
+    /// @custom:field pubRand       The public randomness of the finality provider.
+    /// @custom:field pubRandProof  The proof to verify committed public randomness.
+    /// @custom:field finalitySig   The finality signature.
+    struct EOTSInfo {
+        bytes32 fpBtcPk;
+        bytes32 pubRand;
+        bytes32[] pubRandProof;
+        bytes32 finalitySig;
+    }
 }
