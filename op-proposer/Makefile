@@ -28,7 +28,26 @@ clean:
 test:
 	go test -v ./...
 
+abis = ../packages/contracts-bedrock/snapshots/abi
+bins = ../packages/contracts-bedrock/snapshots/bin
+
+bindings-upgrades:
+	bash -c ' \
+	set -euxo pipefail; \
+	build_abi() { \
+		local lowercase=$$(echo "$$1" | awk '"'"'{print tolower($$0)}'"'"'); \
+		abigen \
+			--abi "$(abis)/$$1.json" \
+			--bin "$(bins)/$$1.bin" \
+			--pkg bindings \
+			--out "bindings/$$lowercase.go" \
+			--type $$1; \
+	}; \
+	build_abi L2OutputOracle \
+	'
+
 .PHONY: \
 	clean \
 	op-proposer \
-	test
+	test \
+	bindings-upgrades

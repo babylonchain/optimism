@@ -32,10 +32,10 @@ var (
 		Usage:   "HTTP provider URL for the rollup node. A comma-separated list enables the active rollup provider.",
 		EnvVars: prefixEnvVars("ROLLUP_RPC"),
 	}
-	AggregatorRpcFlag = &cli.StringFlag{
-		Name:    "aggregator-rpc",
+	EotsAggregatorRpcFlag = &cli.StringFlag{
+		Name:    "eots-aggregator-rpc",
 		Usage:   "The RPC URL for the EOTS aggregator",
-		EnvVars: prefixEnvVars("AGGREGATOR_RPC"),
+		EnvVars: prefixEnvVars("EOTS_AGGREGATOR_RPC"),
 	}
 	// Optional flags
 	L2OOAddressFlag = &cli.StringFlag{
@@ -90,7 +90,7 @@ var (
 var requiredFlags = []cli.Flag{
 	L1EthRpcFlag,
 	RollupRpcFlag,
-	AggregatorRpcFlag,
+	EotsAggregatorRpcFlag,
 }
 
 var optionalFlags = []cli.Flag{

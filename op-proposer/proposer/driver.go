@@ -315,7 +315,7 @@ func (l *L2OutputSubmitter) ProposeL2OutputTxData(output *eth.OutputResponse, co
 	for _, ptr := range res {
 		if ptr != nil {
 			item := bindings.TypesEOTSInfo{
-				FpBtcPk:     ptr.FinalitySig,
+				FpBtcPk:     ptr.FpBtcPk,
 				PubRand:     ptr.PubRand,
 				FinalitySig: ptr.FinalitySig,
 			}
@@ -332,11 +332,12 @@ func proposeL2OutputTxData(abi *abi.ABI, output *eth.OutputResponse, eotsInfos [
 		output.OutputRoot,
 		new(big.Int).SetUint64(output.BlockRef.Number),
 		output.Status.CurrentL1.Hash,
-		new(big.Int).SetUint64(output.Status.CurrentL1.Number), eotsInfos)
+		new(big.Int).SetUint64(output.Status.CurrentL1.Number),
+		eotsInfos)
 }
 
 // ConstructConsumerID constructs a consumer ID
-// following the convention 'op-stack-l2-<L2 ChainID>'.
+// return value: 'op-stack-l2-<L2 ChainID>'
 func (l *L2OutputSubmitter) ConstructConsumerID(ctx context.Context) (string, error) {
 	cCtx, cancel := context.WithTimeout(ctx, l.Cfg.NetworkTimeout)
 	defer cancel()
