@@ -77,23 +77,14 @@ const parseArtifactName = (artifactVersionFile: string): string => {
 }
 
 const main = async () => {
-  console.log(`writing abi, bytecode and storage layout snapshots to ${outdir}`)
+  console.log(`writing abi and storage layout snapshots to ${outdir}`)
 
   const storageLayoutDir = path.join(outdir, 'storageLayout')
   const abiDir = path.join(outdir, 'abi')
-  const binDir = path.join(outdir, 'bin')
-  if (fs.existsSync(storageLayoutDir)) {
-    fs.rmSync(storageLayoutDir, { recursive: true })
-  }
-  if (fs.existsSync(abiDir)) {
-    fs.rmSync(abiDir, { recursive: true })
-  }
-  if (fs.existsSync(binDir)) {
-    fs.rmSync(binDir, { recursive: true })
-  }
+  fs.rmSync(storageLayoutDir, { recursive: true })
+  fs.rmSync(abiDir, { recursive: true })
   fs.mkdirSync(storageLayoutDir, { recursive: true })
   fs.mkdirSync(abiDir, { recursive: true })
-  fs.mkdirSync(binDir, { recursive: true })
 
   const contractSources = getAllContractsSources()
   const knownAbis = {}
@@ -160,10 +151,6 @@ const main = async () => {
       fs.writeFileSync(
         `${abiDir}/${contractName}.json`,
         JSON.stringify(sortKeys(artifact.abi), null, 2)
-      )
-      fs.writeFileSync(
-        `${binDir}/${contractName}.bin`,
-        artifact.bytecode.object
       )
       fs.writeFileSync(
         `${storageLayoutDir}/${contractName}.json`,
