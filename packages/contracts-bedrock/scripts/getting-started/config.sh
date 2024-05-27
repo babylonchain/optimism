@@ -17,6 +17,7 @@ reqenv "GS_ADMIN_ADDRESS"
 reqenv "GS_BATCHER_ADDRESS"
 reqenv "GS_PROPOSER_ADDRESS"
 reqenv "GS_SEQUENCER_ADDRESS"
+reqenv "BABYLON_CONTROLLER_ADDRESS"
 reqenv "L1_RPC_URL"
 
 # Get the finalized block timestamp and hash
@@ -48,6 +49,7 @@ config=$(cat << EOL
 
   "l2OutputOracleProposer": "$GS_PROPOSER_ADDRESS",
   "l2OutputOracleChallenger": "$GS_ADMIN_ADDRESS",
+  "l2OutputOracleBabylonController": "$BABYLON_CONTROLLER_ADDRESS",
 
   "finalizationPeriodSeconds": 12,
 

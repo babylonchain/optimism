@@ -68,5 +68,12 @@
     "offset": 0,
     "slot": "8",
     "type": "uint256"
+  },
+  {
+    "bytes": "20",
+    "label": "babylonController",
+    "offset": 0,
+    "slot": "9",
+    "type": "address"
   }
 ]

@@ -41,6 +41,10 @@ contract L2OutputOracle is Initializable, ISemver {
     /// @custom:network-specific
     uint256 public finalizationPeriodSeconds;
 
+    /// @notice The address of the Babylon Controller contract. Can be updated via upgrade.
+    /// @custom:network-specific
+    address public babylonController;
+
     /// @notice Emitted when an output is proposed.
     /// @param outputRoot    The output root.
     /// @param l2OutputIndex The index of the output in the l2Outputs array.
@@ -69,7 +73,8 @@ contract L2OutputOracle is Initializable, ISemver {
             _startingTimestamp: 0,
             _proposer: address(0),
             _challenger: address(0),
-            _finalizationPeriodSeconds: 0
+            _finalizationPeriodSeconds: 0,
+            _babylonController: address(0)
         });
     }
 
@@ -82,6 +87,7 @@ contract L2OutputOracle is Initializable, ISemver {
     /// @param _challenger          The address of the challenger.
     /// @param _finalizationPeriodSeconds The minimum time (in seconds) that must elapse before a withdrawal
     ///                                   can be finalized.
+    /// @param _babylonController   The address of the Babylon Controller contract.
     function initialize(
         uint256 _submissionInterval,
         uint256 _l2BlockTime,
@@ -89,7 +95,8 @@ contract L2OutputOracle is Initializable, ISemver {
         uint256 _startingTimestamp,
         address _proposer,
         address _challenger,
-        uint256 _finalizationPeriodSeconds
+        uint256 _finalizationPeriodSeconds,
+        address _babylonController
     )
         public
         initializer
@@ -108,6 +115,7 @@ contract L2OutputOracle is Initializable, ISemver {
         proposer = _proposer;
         challenger = _challenger;
         finalizationPeriodSeconds = _finalizationPeriodSeconds;
+        babylonController = _babylonController;
     }
 
     /// @notice Getter for the submissionInterval.
