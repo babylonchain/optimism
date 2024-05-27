@@ -29,19 +29,23 @@ test:
 	go test -v ./...
 
 abis = ../packages/contracts-bedrock/snapshots/abi
-bins = ../packages/contracts-bedrock/snapshots/bin
+artifacts = ../packages/contracts-bedrock/forge-artifacts
+tmpfile = ./tmp.bin
 
 bindings-upgrades:
 	bash -c ' \
 	set -euxo pipefail; \
 	build_abi() { \
 		local lowercase=$$(echo "$$1" | awk '"'"'{print tolower($$0)}'"'"'); \
+		touch "$(tmpfile)"; \
+		jq -r '.bytecode.object' < "$(artifacts)/$$1.sol/$$1.json" > "$(tmpfile)"; \
 		abigen \
 			--abi "$(abis)/$$1.json" \
-			--bin "$(bins)/$$1.bin" \
+			--bin "$(tmpfile)" \
 			--pkg bindings \
 			--out "bindings/$$lowercase.go" \
 			--type $$1; \
+		rm -f "$(tmpfile)"; \
 	}; \
 	build_abi L2OutputOracle \
 	'
