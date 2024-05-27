@@ -112,7 +112,8 @@ contract Initializer_Test is Bridge_Initializer {
         contracts.push(
             InitializeableContract({
                 target: deploy.mustGetAddress("L2OutputOracle"),
-                initCalldata: abi.encodeCall(l2OutputOracle.initialize, (0, 0, 0, 0, address(0), address(0), 0)),
+                initCalldata: abi.encodeCall(
+                    l2OutputOracle.initialize, (0, 0, 0, 0, address(0), address(0), 0, address(0))),
                 initializedSlotVal: deploy.loadInitializedSlot("L2OutputOracle")
             })
         );
@@ -120,7 +121,8 @@ contract Initializer_Test is Bridge_Initializer {
         contracts.push(
             InitializeableContract({
                 target: address(l2OutputOracle),
-                initCalldata: abi.encodeCall(l2OutputOracle.initialize, (0, 0, 0, 0, address(0), address(0), 0)),
+                initCalldata: abi.encodeCall(
+                    l2OutputOracle.initialize, (0, 0, 0, 0, address(0), address(0), 0, address(0))),
                 initializedSlotVal: deploy.loadInitializedSlot("L2OutputOracleProxy")
             })
         );
@@ -351,7 +353,7 @@ contract Initializer_Test is Bridge_Initializer {
         // Ensure that all L1, L2 `Initializable` contracts are accounted for, in addition to
         // OptimismMintableERC20FactoryImpl, OptimismMintableERC20FactoryProxy, OptimismPortal2,
         // DisputeGameFactoryImpl, DisputeGameFactoryProxy, DelayedWETHImpl, DelayedWETHProxy.
-        assertEq(_getNumInitializable() + 3, contracts.length);
+        assertEq(_getNumInitializable() + 1, contracts.length);
 
         // Attempt to re-initialize all contracts within the `contracts` array.
         for (uint256 i; i < contracts.length; i++) {
