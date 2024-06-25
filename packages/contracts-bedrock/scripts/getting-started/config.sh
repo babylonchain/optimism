@@ -104,7 +104,10 @@ config=$(cat << EOL
   "faultGameWithdrawalDelay": 604800,
 
   "preimageOracleMinProposalSize": 1800000,
-  "preimageOracleChallengePeriod": 86400
+  "preimageOracleChallengePeriod": 86400,
+
+  "babylonFinalityGadgetChainType": "$BBN_FINALITY_GADGET_CHAIN_TYPE",
+  "babylonFinalityGadgetContractAddress": "$BBN_FINALITY_GADGET_CONTRACT_ADDRESS"
 }
 EOL
 )

@@ -286,7 +286,7 @@ func (s *L2Verifier) ActL1FinalizedSignal(t Testing) {
 	finalized, err := s.l1.L1BlockRefByLabel(t.Ctx(), eth.Finalized)
 	require.NoError(t, err)
 	s.l1State.HandleNewL1FinalizedBlock(finalized)
-	s.finalizer.Finalize(t.Ctx(), finalized)
+	s.finalizer.Finalize(t.Ctx(), s.rollupCfg, finalized)
 }
 
 func (s *L2Verifier) OnEvent(ev rollup.Event) {

@@ -111,7 +111,7 @@ func (fi *Finalizer) FinalizedL1() (out eth.L1BlockRef) {
 }
 
 // Finalize applies a L1 finality signal, without any fork-choice or L2 state changes.
-func (fi *Finalizer) Finalize(ctx context.Context, l1Origin eth.L1BlockRef) {
+func (fi *Finalizer) Finalize(ctx context.Context, cfg *rollup.Config, l1Origin eth.L1BlockRef) {
 	fi.mu.Lock()
 	defer fi.mu.Unlock()
 	prevFinalizedL1 := fi.finalizedL1
@@ -130,7 +130,7 @@ func (fi *Finalizer) Finalize(ctx context.Context, l1Origin eth.L1BlockRef) {
 	}
 
 	// remnant of finality in EngineQueue: the finalization work does not inherit a context from the caller.
-	if err := fi.tryFinalize(ctx); err != nil {
+	if err := fi.tryFinalize(ctx, cfg); err != nil {
 		fi.log.Warn("received L1 finalization signal, but was unable to determine and apply L2 finality", "err", err)
 	}
 }
@@ -143,7 +143,7 @@ func (fi *Finalizer) Finalize(ctx context.Context, l1Origin eth.L1BlockRef) {
 // This will look at what has been buffered so far,
 // sanity-check we are on the finalizing L1 chain,
 // and finalize any L2 blocks that were fully derived from known finalized L1 blocks.
-func (fi *Finalizer) OnDerivationL1End(ctx context.Context, derivedFrom eth.L1BlockRef) error {
+func (fi *Finalizer) OnDerivationL1End(ctx context.Context, cfg *rollup.Config, derivedFrom eth.L1BlockRef) error {
 	fi.mu.Lock()
 	defer fi.mu.Unlock()
 	if fi.finalizedL1 == (eth.L1BlockRef{}) {
@@ -155,10 +155,10 @@ func (fi *Finalizer) OnDerivationL1End(ctx context.Context, derivedFrom eth.L1Bl
 	}
 	fi.log.Info("processing L1 finality information", "l1_finalized", fi.finalizedL1, "derived_from", derivedFrom, "previous", fi.triedFinalizeAt)
 	fi.triedFinalizeAt = derivedFrom.Number
-	return fi.tryFinalize(ctx)
+	return fi.tryFinalize(ctx, cfg)
 }
 
-func (fi *Finalizer) tryFinalize(ctx context.Context) error {
+func (fi *Finalizer) tryFinalize(ctx context.Context, cfg *rollup.Config) error {
 	// default to keep the same finalized block
 	finalizedL2 := fi.ec.Finalized()
 	var finalizedDerivedFrom eth.BlockID
@@ -166,10 +166,9 @@ func (fi *Finalizer) tryFinalize(ctx context.Context) error {
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
 			// Initialise new BabylonChain client
-			// TODO: replace config with actual values
 			config := sdk.Config{
-				ChainType:    0,
-				ContractAddr: "bbn1ghd753shjuwexxywmgs4xz7x2q732vcnkm6h2pyv9s6ah3hylvrqxxvh0f",
+				ChainType:    cfg.BabylonConfig.ChainType,
+				ContractAddr: cfg.BabylonConfig.ContractAddress,
 			}
 			client, err := sdk.NewClient(config)
 			if err != nil {

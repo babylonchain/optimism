@@ -292,6 +292,12 @@ type DeployConfig struct {
 
 	// UseInterop is a flag that indicates if the system is using interop
 	UseInterop bool `json:"useInterop,omitempty"`
+
+	// BabylonFinalityGadgetChainType is the chain type for the Babylon finality gadget.
+	BabylonFinalityGadgetChainType int `json:"babylonFinalityGadgetChainType"`
+
+	// BabylonFinalityGadgetContractAddress is the contract address for the Babylon finality gadget on BabylonChain.
+	BabylonFinalityGadgetContractAddress string `json:"babylonFinalityGadgetContractAddress"`
 }
 
 // Copy will deeply copy the DeployConfig. This does a JSON roundtrip to copy
@@ -660,6 +666,10 @@ func (d *DeployConfig) RollupConfig(l1StartBlock *types.Block, l2GenesisBlockHas
 		FjordTime:              d.FjordTime(l1StartBlock.Time()),
 		InteropTime:            d.InteropTime(l1StartBlock.Time()),
 		PlasmaConfig:           plasma,
+		BabylonConfig:          &rollup.BabylonConfig{
+			ChainType: d.BabylonFinalityGadgetChainType,
+			ContractAddress: d.BabylonFinalityGadgetContractAddress,
+		},
 	}, nil
 }
 

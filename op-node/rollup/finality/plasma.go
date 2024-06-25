@@ -36,7 +36,7 @@ func NewPlasmaFinalizer(log log.Logger, cfg *rollup.Config,
 	// Finality signal will come from the DA contract or L1 finality whichever is last.
 	// The plasma module will then call the inner.Finalize function when applicable.
 	backend.OnFinalizedHeadSignal(func(ref eth.L1BlockRef) {
-		inner.Finalize(context.Background(), ref) // plasma backend context passing can be improved
+		inner.Finalize(context.Background(), cfg, ref) // plasma backend context passing can be improved
 	})
 
 	return &PlasmaFinalizer{
@@ -45,6 +45,6 @@ func NewPlasmaFinalizer(log log.Logger, cfg *rollup.Config,
 	}
 }
 
-func (fi *PlasmaFinalizer) Finalize(ctx context.Context, l1Origin eth.L1BlockRef) {
+func (fi *PlasmaFinalizer) Finalize(ctx context.Context, cfg *rollup.Config, l1Origin eth.L1BlockRef) {
 	fi.backend.Finalize(l1Origin)
 }

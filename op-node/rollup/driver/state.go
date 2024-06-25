@@ -314,7 +314,7 @@ func (s *Driver) eventLoop() {
 		case newL1Finalized := <-s.l1FinalizedSig:
 			s.l1State.HandleNewL1FinalizedBlock(newL1Finalized)
 			ctx, cancel := context.WithTimeout(s.driverCtx, time.Second*5)
-			s.Finalizer.Finalize(ctx, newL1Finalized)
+			s.Finalizer.Finalize(ctx, s.Config, newL1Finalized)
 			cancel()
 			reqStep() // we may be able to mark more L2 data as finalized now
 		case <-s.sched.NextDelayedStep():
@@ -554,7 +554,7 @@ func (s *SyncDeriver) SyncStep(ctx context.Context) error {
 	s.Finalizer.PostProcessSafeL2(s.Engine.SafeL2Head(), derivationOrigin)
 
 	// try to finalize the L2 blocks we have synced so far (no-op if L1 finality is behind)
-	if err := s.Finalizer.OnDerivationL1End(ctx, derivationOrigin); err != nil {
+	if err := s.Finalizer.OnDerivationL1End(ctx, s.Config, derivationOrigin); err != nil {
 		return fmt.Errorf("finalizer OnDerivationL1End error: %w", err)
 	}
 

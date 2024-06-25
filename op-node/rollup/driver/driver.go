@@ -91,7 +91,7 @@ type AttributesHandler interface {
 }
 
 type Finalizer interface {
-	Finalize(ctx context.Context, ref eth.L1BlockRef)
+	Finalize(ctx context.Context, cfg *rollup.Config, ref eth.L1BlockRef)
 	FinalizedL1() eth.L1BlockRef
 	engine.FinalizerHooks
 }

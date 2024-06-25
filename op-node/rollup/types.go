@@ -62,6 +62,13 @@ type PlasmaConfig struct {
 	DAResolveWindow uint64 `json:"da_resolve_window"`
 }
 
+type BabylonConfig struct {
+	// Chain type
+	ChainType int `json:"chain_type"`
+	// BabylonChain contract address
+	ContractAddress string `json:"contract_address"`
+}
+
 type Config struct {
 	// Genesis anchor point of the rollup
 	Genesis Genesis `json:"genesis"`
@@ -142,6 +149,9 @@ type Config struct {
 
 	// LegacyUsePlasma is activated when the chain is in alt-da mode.
 	LegacyUsePlasma bool `json:"use_plasma,omitempty"`
+
+	// Babylon config
+	BabylonConfig *BabylonConfig `json:"babylon_config"`
 }
 
 // ValidateL1Config checks L1 config variables for errors.
