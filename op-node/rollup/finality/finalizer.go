@@ -86,6 +86,8 @@ type Finalizer struct {
 	l1Fetcher FinalizerL1Interface
 
 	ec FinalizerEngine
+
+	babylonConfig rollup.BabylonConfig
 }
 
 func NewFinalizer(log log.Logger, cfg *rollup.Config, l1Fetcher FinalizerL1Interface, ec FinalizerEngine) *Finalizer {
@@ -98,6 +100,10 @@ func NewFinalizer(log log.Logger, cfg *rollup.Config, l1Fetcher FinalizerL1Inter
 		finalityLookback: lookback,
 		l1Fetcher:        l1Fetcher,
 		ec:               ec,
+		babylonConfig:    rollup.BabylonConfig{
+			ChainType:        cfg.BabylonConfig.ChainType,
+			ContractAddress:  cfg.BabylonConfig.ContractAddress,
+		},
 	}
 }
 
@@ -111,7 +117,7 @@ func (fi *Finalizer) FinalizedL1() (out eth.L1BlockRef) {
 }
 
 // Finalize applies a L1 finality signal, without any fork-choice or L2 state changes.
-func (fi *Finalizer) Finalize(ctx context.Context, cfg *rollup.Config, l1Origin eth.L1BlockRef) {
+func (fi *Finalizer) Finalize(ctx context.Context, l1Origin eth.L1BlockRef) {
 	fi.mu.Lock()
 	defer fi.mu.Unlock()
 	prevFinalizedL1 := fi.finalizedL1
@@ -130,7 +136,7 @@ func (fi *Finalizer) Finalize(ctx context.Context, cfg *rollup.Config, l1Origin 
 	}
 
 	// remnant of finality in EngineQueue: the finalization work does not inherit a context from the caller.
-	if err := fi.tryFinalize(ctx, cfg); err != nil {
+	if err := fi.tryFinalize(ctx); err != nil {
 		fi.log.Warn("received L1 finalization signal, but was unable to determine and apply L2 finality", "err", err)
 	}
 }
@@ -143,7 +149,7 @@ func (fi *Finalizer) Finalize(ctx context.Context, cfg *rollup.Config, l1Origin 
 // This will look at what has been buffered so far,
 // sanity-check we are on the finalizing L1 chain,
 // and finalize any L2 blocks that were fully derived from known finalized L1 blocks.
-func (fi *Finalizer) OnDerivationL1End(ctx context.Context, cfg *rollup.Config, derivedFrom eth.L1BlockRef) error {
+func (fi *Finalizer) OnDerivationL1End(ctx context.Context, derivedFrom eth.L1BlockRef) error {
 	fi.mu.Lock()
 	defer fi.mu.Unlock()
 	if fi.finalizedL1 == (eth.L1BlockRef{}) {
@@ -155,10 +161,10 @@ func (fi *Finalizer) OnDerivationL1End(ctx context.Context, cfg *rollup.Config, 
 	}
 	fi.log.Info("processing L1 finality information", "l1_finalized", fi.finalizedL1, "derived_from", derivedFrom, "previous", fi.triedFinalizeAt)
 	fi.triedFinalizeAt = derivedFrom.Number
-	return fi.tryFinalize(ctx, cfg)
+	return fi.tryFinalize(ctx)
 }
 
-func (fi *Finalizer) tryFinalize(ctx context.Context, cfg *rollup.Config) error {
+func (fi *Finalizer) tryFinalize(ctx context.Context) error {
 	// default to keep the same finalized block
 	finalizedL2 := fi.ec.Finalized()
 	var finalizedDerivedFrom eth.BlockID
@@ -167,8 +173,8 @@ func (fi *Finalizer) tryFinalize(ctx context.Context, cfg *rollup.Config) error 
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
 			// Initialise new BabylonChain client
 			config := sdk.Config{
-				ChainType:    cfg.BabylonConfig.ChainType,
-				ContractAddr: cfg.BabylonConfig.ContractAddress,
+				ChainType:    fi.babylonConfig.ChainType,
+				ContractAddr: fi.babylonConfig.ContractAddress,
 			}
 			client, err := sdk.NewClient(config)
 			if err != nil {

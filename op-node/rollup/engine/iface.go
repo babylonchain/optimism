@@ -3,7 +3,6 @@ package engine
 import (
 	"context"
 
-	"github.com/ethereum-optimism/optimism/op-node/rollup"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/async"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/conductor"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
@@ -56,7 +55,7 @@ type LocalEngineControl interface {
 type FinalizerHooks interface {
 	// OnDerivationL1End remembers the given L1 block,
 	// and finalizes any prior data with the latest finality signal based on block height.
-	OnDerivationL1End(ctx context.Context, cfg *rollup.Config, derivedFrom eth.L1BlockRef) error
+	OnDerivationL1End(ctx context.Context, derivedFrom eth.L1BlockRef) error
 	// PostProcessSafeL2 remembers the L2 block is derived from the given L1 block, for later finalization.
 	PostProcessSafeL2(l2Safe eth.L2BlockRef, derivedFrom eth.L1BlockRef)
 	// Reset clear recent state, to adapt to reorgs.

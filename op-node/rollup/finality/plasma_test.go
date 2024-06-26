@@ -107,7 +107,7 @@ func TestPlasmaFinalityData(t *testing.T) {
 	// and post processing.
 	for i := uint64(0); i < 200; i++ {
 		if i == 10 { // finalize a L1 commitment
-			fi.Finalize(context.Background(), cfg, l1parent)
+			fi.Finalize(context.Background(), l1parent)
 		}
 
 		previous := l1parent
@@ -129,7 +129,7 @@ func TestPlasmaFinalityData(t *testing.T) {
 			}
 			fi.PostProcessSafeL2(l2parent, l1parent)
 		}
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, l1parent))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), l1parent))
 		plasmaFinalization := commitmentInclusionFinalized.Number + cfg.PlasmaConfig.DAChallengeWindow
 		if i == plasmaFinalization {
 			// Pretend to be the plasma backend,

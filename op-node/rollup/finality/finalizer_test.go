@@ -210,14 +210,14 @@ func TestEngineQueue_Finalize(t *testing.T) {
 
 		// now say C1 was included in D and became the new safe head
 		fi.PostProcessSafeL2(refC1, refD)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refD))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refD))
 
 		// now say D0 was included in E and became the new safe head
 		fi.PostProcessSafeL2(refD0, refE)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refE))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refE))
 
 		// let's finalize D from which we fully derived C1, but not D0
-		fi.Finalize(context.Background(), cfg, refD)
+		fi.Finalize(context.Background(), refD)
 		require.Equal(t, refC1, ec.Finalized(), "C1 was included in finalized D, and should now be finalized, as finality signal is instantly picked up")
 	})
 
@@ -237,17 +237,17 @@ func TestEngineQueue_Finalize(t *testing.T) {
 
 		// now say C1 was included in D and became the new safe head
 		fi.PostProcessSafeL2(refC1, refD)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refD))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refD))
 
 		// now say D0 was included in E and became the new safe head
 		fi.PostProcessSafeL2(refD0, refE)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refE))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refE))
 
 		// let's finalize D from which we fully derived C1, but not D0
-		fi.Finalize(context.Background(), cfg, refD)
+		fi.Finalize(context.Background(), refD)
 		require.Equal(t, refA1, ec.Finalized(), "C1 was included in finalized D, but finality could not be verified yet, due to temporary test error")
 
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refF))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refF))
 		require.Equal(t, refC1, ec.Finalized(), "C1 was included in finalized D, and should now be finalized, as check can succeed when revisited")
 	})
 
@@ -270,17 +270,17 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		fi := NewFinalizer(logger, &rollup.Config{}, l1F, ec)
 
 		fi.PostProcessSafeL2(refC1, refD)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refD))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refD))
 
 		fi.PostProcessSafeL2(refD0, refE)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refE))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refE))
 
-		fi.Finalize(context.Background(), cfg, refD)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refF))
+		fi.Finalize(context.Background(), refD)
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refF))
 		require.Equal(t, refC1, ec.Finalized(), "C1 was included in D, and should be finalized now")
 
-		fi.Finalize(context.Background(), cfg, refE)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refG))
+		fi.Finalize(context.Background(), refE)
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refG))
 		require.Equal(t, refD0, ec.Finalized(), "D0 was included in E, and should be finalized now")
 
 		fi.PostProcessSafeL2(refD1, refH)
@@ -288,11 +288,11 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		fi.PostProcessSafeL2(refE1, refH)
 		fi.PostProcessSafeL2(refF0, refH)
 		fi.PostProcessSafeL2(refF1, refH)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refH))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refH))
 		require.Equal(t, refD0, ec.Finalized(), "D1-F1 were included in L1 blocks that have not been finalized yet")
 
-		fi.Finalize(context.Background(), cfg, refH)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refI))
+		fi.Finalize(context.Background(), refH)
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refI))
 		require.Equal(t, refF1, ec.Finalized(), "F1 should be finalized now")
 	})
 
@@ -312,14 +312,14 @@ func TestEngineQueue_Finalize(t *testing.T) {
 
 		// now say B1 was included in C and became the new safe head
 		fi.PostProcessSafeL2(refB1, refC)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refC))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refC))
 
 		// now say C0 was included in E and became the new safe head
 		fi.PostProcessSafeL2(refC0, refE)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refE))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refE))
 
 		// let's finalize D, from which we fully derived B1, but not C0 (referenced L1 origin in L2 block != inclusion of L2 block in L1 chain)
-		fi.Finalize(context.Background(), cfg, refD)
+		fi.Finalize(context.Background(), refD)
 		require.Equal(t, refB1, ec.Finalized(), "B1 was included in finalized D, and should now be finalized")
 	})
 
@@ -342,7 +342,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 
 		// now say B1 was included in C and became the new safe head
 		fi.PostProcessSafeL2(refB1, refC)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refC))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refC))
 
 		// temporary fork of the L1, and derived safe L2 blocks from.
 		refC0Alt := eth.L2BlockRef{
@@ -375,26 +375,26 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		// The finality signal was for a new chain, while derivation is on an old stale chain.
 		// It should be detected that C0Alt and C1Alt cannot actually be finalized,
 		// even though they are older than the latest finality signal.
-		fi.Finalize(context.Background(), cfg, refF)
+		fi.Finalize(context.Background(), refF)
 		require.Equal(t, refA1, ec.Finalized(), "cannot verify refC0Alt and refC1Alt, and refB1 is older and not checked")
 		// And process DAlt, still stuck on old chain.
-		require.ErrorIs(t, derive.ErrReset, fi.OnDerivationL1End(context.Background(), cfg, refDAlt))
+		require.ErrorIs(t, derive.ErrReset, fi.OnDerivationL1End(context.Background(), refDAlt))
 		require.Equal(t, refA1, ec.Finalized(), "no new finalized L2 blocks after early finality signal with stale chain")
 		require.Equal(t, refF, fi.FinalizedL1(), "remember the new finality signal for later however")
 		// Now reset, because of the reset error
 		fi.Reset()
 
 		// And process the canonical chain, with empty block D (no post-processing of canonical C0 blocks yet)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refD))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refD))
 
 		// Include C0 in E
 		fi.PostProcessSafeL2(refC0, refE)
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refE))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refE))
 		// Due to the "finalityDelay" we don't repeat finality checks shortly after one another.
 		require.Equal(t, refA1, ec.Finalized())
 		// if we reset the attempt, then we can finalize however.
 		fi.triedFinalizeAt = 0
-		require.NoError(t, fi.OnDerivationL1End(context.Background(), cfg, refE))
+		require.NoError(t, fi.OnDerivationL1End(context.Background(), refE))
 		require.Equal(t, refC0, ec.Finalized())
 	})
 }
