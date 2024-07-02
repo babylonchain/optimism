@@ -292,8 +292,8 @@ github.com/aws/aws-sdk-go v1.44.122/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX
 github.com/aws/aws-sdk-go v1.44.312 h1:llrElfzeqG/YOLFFKjg1xNpZCFJ2xraIi3PqSuP+95k=
 github.com/aws/aws-sdk-go v1.44.312/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
 github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZwxzkQq9wy+g=
-github.com/babylonchain/babylon-da-sdk v0.0.0-20240628003715-24fbf6d4643d h1:ncnxjWL5VzSPpKoJtDdENNbVGBi2xmRUcvRwnuvoZis=
-github.com/babylonchain/babylon-da-sdk v0.0.0-20240628003715-24fbf6d4643d/go.mod h1:s508UvkWTk2jgsuDzpxzXjFxajK4gtJSe6dGFf3eB4E=
+github.com/babylonchain/babylon-da-sdk v0.0.0-20240702185408-0cda6f3ff461 h1:s+dstutxHnk+TPVgXz/4ukoGvYzLU1cZoL9zqA6MByo=
+github.com/babylonchain/babylon-da-sdk v0.0.0-20240702185408-0cda6f3ff461/go.mod h1:s508UvkWTk2jgsuDzpxzXjFxajK4gtJSe6dGFf3eB4E=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.5 h1:VvXlSJBzZpA/zum6Sj74hxwYI2DIxRWuNIoXAzHZz5o=

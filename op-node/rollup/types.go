@@ -67,6 +67,8 @@ type BabylonConfig struct {
 	ChainType int `json:"chain_type"`
 	// BabylonChain contract address
 	ContractAddress string `json:"contract_address"`
+	// Bitcoin RPC url
+	BitcoinRpc string `json:"bitcoin_rpc"`
 }
 
 type Config struct {

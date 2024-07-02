@@ -295,6 +295,9 @@ type DeployConfig struct {
 
 	// BabylonFinalityGadgetContractAddress is the contract address for the Babylon finality gadget on BabylonChain.
 	BabylonFinalityGadgetContractAddress string `json:"babylonFinalityGadgetContractAddress"`
+
+	// BabylonFinalityGadgetBitcoinRpc is the Bitcoin RPC URL for the Babylon finality gadget.
+	BabylonFinalityGadgetBitcoinRpc string `json:"babylonFinalityGadgetBitcoinRpc"`
 }
 
 // Copy will deeply copy the DeployConfig. This does a JSON roundtrip to copy
@@ -663,9 +666,10 @@ func (d *DeployConfig) RollupConfig(l1StartBlock *types.Block, l2GenesisBlockHas
 		FjordTime:              d.FjordTime(l1StartBlock.Time()),
 		InteropTime:            d.InteropTime(l1StartBlock.Time()),
 		PlasmaConfig:           plasma,
-		BabylonConfig:          &rollup.BabylonConfig{
-			ChainType: d.BabylonFinalityGadgetChainType,
+		BabylonConfig: &rollup.BabylonConfig{
+			ChainType:       d.BabylonFinalityGadgetChainType,
 			ContractAddress: d.BabylonFinalityGadgetContractAddress,
+			BitcoinRpc:      d.BabylonFinalityGadgetBitcoinRpc,
 		},
 	}, nil
 }

@@ -543,6 +543,7 @@ func (cfg SystemConfig) Start(t *testing.T, _opts ...SystemConfigOption) (*Syste
 			BabylonConfig: &rollup.BabylonConfig{
 				ChainType:       cfg.DeployConfig.BabylonFinalityGadgetChainType,
 				ContractAddress: cfg.DeployConfig.BabylonFinalityGadgetContractAddress,
+				BitcoinRpc:      cfg.DeployConfig.BabylonFinalityGadgetBitcoinRpc,
 			},
 		}
 	}

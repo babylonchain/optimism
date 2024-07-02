@@ -377,7 +377,7 @@ require (
 
 replace (
 	github.com/babylonchain/babylon => ../babylon-private
-	github.com/babylonchain/babylon-da-sdk => github.com/babylonchain/babylon-da-sdk v0.0.0-20240628003715-24fbf6d4643d
+	github.com/babylonchain/babylon-da-sdk => github.com/babylonchain/babylon-da-sdk v0.0.0-20240702185408-0cda6f3ff461
 	github.com/cockroachdb/pebble => github.com/cockroachdb/pebble v0.0.0-20231018212520-f6cde3fc2fa4
 	github.com/ethereum/go-ethereum => github.com/ethereum-optimism/op-geth v1.101315.3-rc.1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1

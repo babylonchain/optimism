@@ -112,6 +112,7 @@ func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fet
 		babylonConfig: rollup.BabylonConfig{
 			ChainType:       cfg.BabylonConfig.ChainType,
 			ContractAddress: cfg.BabylonConfig.ContractAddress,
+			BitcoinRpc:      cfg.BabylonConfig.BitcoinRpc,
 		},
 	}
 }
@@ -216,6 +217,7 @@ func (fi *Finalizer) tryFinalize() {
 			config := &sdk.Config{
 				ChainType:    fi.babylonConfig.ChainType,
 				ContractAddr: fi.babylonConfig.ContractAddress,
+				BitcoinRpc:   fi.babylonConfig.BitcoinRpc,
 			}
 			client, err := sdk.NewClient(config)
 			if err != nil {

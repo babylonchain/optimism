@@ -108,6 +108,7 @@ config=$(cat << EOL
 
   "babylonFinalityGadgetChainType": "$BBN_FINALITY_GADGET_CHAIN_TYPE",
   "babylonFinalityGadgetContractAddress": "$BBN_FINALITY_GADGET_CONTRACT_ADDRESS"
+  "babylonFinalityGadgetBitcoinRpc": "$BBN_FINALITY_GADGET_BITCOIN_RPC"
 }
 EOL
 )
