@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/rollup/engine"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 
+	"github.com/babylonchain/babylon-da-sdk/btcclient"
 	"github.com/babylonchain/babylon-da-sdk/sdk"
 )
 
@@ -215,10 +216,12 @@ func (fi *Finalizer) tryFinalize() {
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
 			// Initialise new BabylonChain client
+			btcConfig := btcclient.DefaultBTCConfig()
+			btcConfig.RPCHost = fi.babylonConfig.BitcoinRpc
 			config := &sdk.Config{
 				ChainType:    fi.babylonConfig.ChainType,
 				ContractAddr: fi.babylonConfig.ContractAddress,
-				BitcoinRpc:   fi.babylonConfig.BitcoinRpc,
+				BTCConfig:   	btcConfig,
 			}
 			client, err := sdk.NewClient(config)
 			if err != nil {
