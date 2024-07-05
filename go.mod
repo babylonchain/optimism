@@ -116,7 +116,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.6 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/gogoproto v1.4.12 // indirect
+	github.com/cosmos/gogoproto v1.5.0 // indirect
 	github.com/cosmos/iavl v1.1.2 // indirect
 	github.com/cosmos/ibc-go/modules/capability v1.0.0 // indirect
 	github.com/cosmos/ibc-go/v8 v8.2.0 // indirect
@@ -378,7 +378,7 @@ require (
 )
 
 replace (
-	github.com/babylonchain/babylon => github.com/babylonchain/babylon-private v0.8.6-0.20240705135310-e91ff7f60ead
+	github.com/babylonchain/babylon => github.com/babylonchain/babylon-private v0.8.6-0.20240705163204-3b36f1653933
 	github.com/cockroachdb/pebble => github.com/cockroachdb/pebble v0.0.0-20231018212520-f6cde3fc2fa4
 	github.com/ethereum/go-ethereum => github.com/ethereum-optimism/op-geth v1.101315.3-rc.1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
