@@ -69,7 +69,7 @@ type FinalizerL1Interface interface {
 	L1BlockRefByNumber(context.Context, uint64) (eth.L1BlockRef, error)
 }
 
-type BabylonFinalityInterface interface {
+type BabylonFinalityClient interface {
 	QueryIsBlockBabylonFinalized(queryParams *sdk.L2Block) (bool, error)
 }
 
@@ -100,26 +100,19 @@ type Finalizer struct {
 
 	l1Fetcher FinalizerL1Interface
 
-	// babylonConfig is the configuration for the Babylon DA SDK client
-	babylonConfig *rollup.BabylonConfig
 	// babylonFinalityClient is the Babylon DA SDK client
-	babylonFinalityClient BabylonFinalityInterface
+	babylonFinalityClient BabylonFinalityClient
 }
 
 func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fetcher FinalizerL1Interface, emitter rollup.EventEmitter) *Finalizer {
 	lookback := calcFinalityLookback(cfg)
 
 	// Initialize the Babylon Finality client
-	babylonConfig := &rollup.BabylonConfig{
-		ChainType:       cfg.BabylonConfig.ChainType,
-		ContractAddress: cfg.BabylonConfig.ContractAddress,
-		BitcoinRpc:      cfg.BabylonConfig.BitcoinRpc,
-	}
 	btcConfig := btcclient.DefaultBTCConfig()
-	btcConfig.RPCHost = babylonConfig.BitcoinRpc
+	btcConfig.RPCHost = cfg.BabylonConfig.BitcoinRpc
 	config := &sdk.Config{
-		ChainType:    babylonConfig.ChainType,
-		ContractAddr: babylonConfig.ContractAddress,
+		ChainType:    cfg.BabylonConfig.ChainType,
+		ContractAddr: cfg.BabylonConfig.ContractAddress,
 		BTCConfig:    btcConfig,
 	}
 	log.Debug(
@@ -143,7 +136,6 @@ func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fet
 		finalityLookback:      lookback,
 		l1Fetcher:             l1Fetcher,
 		emitter:               emitter,
-		babylonConfig:         babylonConfig,
 		babylonFinalityClient: babylonFinalityClient,
 	}
 }
