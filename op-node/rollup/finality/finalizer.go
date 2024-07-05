@@ -69,6 +69,10 @@ type FinalizerL1Interface interface {
 	L1BlockRefByNumber(context.Context, uint64) (eth.L1BlockRef, error)
 }
 
+type BabylonFinalityInterface interface {
+	QueryIsBlockBabylonFinalized(queryParams *sdk.L2Block) (bool, error)
+}
+
 type Finalizer struct {
 	mu sync.Mutex
 
@@ -97,25 +101,50 @@ type Finalizer struct {
 	l1Fetcher FinalizerL1Interface
 
 	// babylonConfig is the configuration for the Babylon DA SDK client
-	babylonConfig rollup.BabylonConfig
+	babylonConfig *rollup.BabylonConfig
+	// babylonFinalityClient is the Babylon DA SDK client
+	babylonFinalityClient BabylonFinalityInterface
 }
 
 func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fetcher FinalizerL1Interface, emitter rollup.EventEmitter) *Finalizer {
 	lookback := calcFinalityLookback(cfg)
+
+	// Initialize the Babylon Finality client
+	babylonConfig := &rollup.BabylonConfig{
+		ChainType:       cfg.BabylonConfig.ChainType,
+		ContractAddress: cfg.BabylonConfig.ContractAddress,
+		BitcoinRpc:      cfg.BabylonConfig.BitcoinRpc,
+	}
+	btcConfig := btcclient.DefaultBTCConfig()
+	btcConfig.RPCHost = babylonConfig.BitcoinRpc
+	config := &sdk.Config{
+		ChainType:    babylonConfig.ChainType,
+		ContractAddr: babylonConfig.ContractAddress,
+		BTCConfig:    btcConfig,
+	}
+	log.Debug(
+		"the configuration of Babylon Finality client",
+		"chain_type", config.ChainType,
+		"contract_address", config.ContractAddr,
+		"btc_rpc_host", config.BTCConfig.RPCHost,
+	)
+	babylonFinalityClient, err := sdk.NewClient(config)
+	if err != nil {
+		emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf("failed to initialize Babylon Finality client: %w", err)})
+		return nil
+	}
+
 	return &Finalizer{
-		ctx:              ctx,
-		log:              log,
-		finalizedL1:      eth.L1BlockRef{},
-		triedFinalizeAt:  0,
-		finalityData:     make([]FinalityData, 0, lookback),
-		finalityLookback: lookback,
-		l1Fetcher:        l1Fetcher,
-		emitter:          emitter,
-		babylonConfig: rollup.BabylonConfig{
-			ChainType:       cfg.BabylonConfig.ChainType,
-			ContractAddress: cfg.BabylonConfig.ContractAddress,
-			BitcoinRpc:      cfg.BabylonConfig.BitcoinRpc,
-		},
+		ctx:                   ctx,
+		log:                   log,
+		finalizedL1:           eth.L1BlockRef{},
+		triedFinalizeAt:       0,
+		finalityData:          make([]FinalityData, 0, lookback),
+		finalityLookback:      lookback,
+		l1Fetcher:             l1Fetcher,
+		emitter:               emitter,
+		babylonConfig:         babylonConfig,
+		babylonFinalityClient: babylonFinalityClient,
 	}
 }
 
@@ -215,19 +244,6 @@ func (fi *Finalizer) tryFinalize() {
 	// go through the latest inclusion data, and find the last L2 block that was derived from a finalized L1 block
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			btcConfig := btcclient.DefaultBTCConfig()
-			btcConfig.RPCHost = fi.babylonConfig.BitcoinRpc
-			config := &sdk.Config{
-				ChainType:    fi.babylonConfig.ChainType,
-				ContractAddr: fi.babylonConfig.ContractAddress,
-				BTCConfig:    btcConfig,
-			}
-			client, err := sdk.NewClient(config)
-			if err != nil {
-				fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf("failed to initialize BabylonChain client: %w", err)})
-				return
-			}
-
 			// check if fd.L2Block.Number is finalized on Babylon
 			queryParams := &sdk.L2Block{
 				BlockHeight:    fd.L2Block.Number,
@@ -240,7 +256,7 @@ func (fi *Finalizer) tryFinalize() {
 				"block_hash", queryParams.BlockHash,
 				"block_timestamp", queryParams.BlockTimestamp,
 			)
-			babylonFinalized, err := client.QueryIsBlockBabylonFinalized(queryParams)
+			babylonFinalized, err := fi.babylonFinalityClient.QueryIsBlockBabylonFinalized(queryParams)
 			fi.log.Debug("babylon gadget query result", "babylon_finalized", babylonFinalized)
 
 			// If the error encountered is of type NoFpHasVotingPowerError, it should be ignored;
