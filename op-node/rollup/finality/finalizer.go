@@ -116,7 +116,7 @@ func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fet
 		BTCConfig:    btcConfig,
 	}
 	log.Debug(
-		"the configuration of Babylon Finality client",
+		"creating Babylon Finality client",
 		"chain_type", config.ChainType,
 		"contract_address", config.ContractAddr,
 		"btc_rpc_host", config.BTCConfig.RPCHost,
