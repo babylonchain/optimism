@@ -14,8 +14,8 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/rollup/engine"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 
-	"github.com/babylonchain/babylon-da-sdk/btcclient"
-	"github.com/babylonchain/babylon-da-sdk/sdk"
+	"github.com/babylonchain/babylon-finality-gadget/btcclient"
+	"github.com/babylonchain/babylon-finality-gadget/sdk"
 )
 
 // defaultFinalityLookback defines the amount of L1<>L2 relations to track for finalization purposes, one per L1 block.

@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/andybalholm/brotli v1.1.0
-	github.com/babylonchain/babylon-da-sdk v0.0.0-20240706014144-ef8ae2b70aa7
+	github.com/babylonchain/babylon-finality-gadget v0.0.0-20240708032647-4fdeba25732d
 	github.com/btcsuite/btcd v0.24.2
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
 	github.com/cockroachdb/pebble v1.1.0
