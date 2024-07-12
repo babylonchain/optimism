@@ -292,8 +292,8 @@ github.com/aws/aws-sdk-go v1.44.122/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX
 github.com/aws/aws-sdk-go v1.44.312 h1:llrElfzeqG/YOLFFKjg1xNpZCFJ2xraIi3PqSuP+95k=
 github.com/aws/aws-sdk-go v1.44.312/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
 github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZwxzkQq9wy+g=
-github.com/babylonchain/babylon-finality-gadget v0.0.0-20240708032647-4fdeba25732d h1:iGEbm7HfamD3lDs1q2Ui3TV6wWlhWtVhD7ErBOGAvCM=
-github.com/babylonchain/babylon-finality-gadget v0.0.0-20240708032647-4fdeba25732d/go.mod h1:tsFvb/ZnQpBNtXmiCHoClBu/QRPLuCSr2lncexlhQSQ=
+github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240712003149-d6ec4cbe811d h1:tsgyq8phnqpsTsq3sZxuYTJEDhzdsm2NZPrRUDJx86M=
+github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240712003149-d6ec4cbe811d/go.mod h1:tsFvb/ZnQpBNtXmiCHoClBu/QRPLuCSr2lncexlhQSQ=
 github.com/babylonchain/babylon-private v0.8.6-0.20240705135310-e91ff7f60ead h1:LyyrFtdSbx0a5ZLHA/qMNMjAxZltfnNJgj5+uEgqZdI=
 github.com/babylonchain/babylon-private v0.8.6-0.20240705135310-e91ff7f60ead/go.mod h1:Tdi+29Y+DzCaaz0V0sBRXF1tXXLnH6JHJsOG8uktWLU=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=

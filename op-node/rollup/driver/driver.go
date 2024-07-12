@@ -182,9 +182,9 @@ func NewDriver(
 
 	var finalizer Finalizer
 	if cfg.PlasmaEnabled() {
-		finalizer = finality.NewPlasmaFinalizer(driverCtx, log, cfg, l1, synchronousEvents, plasma)
+		finalizer = finality.NewPlasmaFinalizer(driverCtx, log, cfg, l1, l2, synchronousEvents, plasma)
 	} else {
-		finalizer = finality.NewFinalizer(driverCtx, log, cfg, l1, synchronousEvents)
+		finalizer = finality.NewFinalizer(driverCtx, log, cfg, l1, l2, synchronousEvents)
 	}
 
 	attributesHandler := attributes.NewAttributesHandler(log, cfg, driverCtx, l2, synchronousEvents)

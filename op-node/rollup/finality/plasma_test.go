@@ -37,6 +37,7 @@ var _ PlasmaBackend = (*fakePlasmaBackend)(nil)
 func TestPlasmaFinalityData(t *testing.T) {
 	logger := testlog.Logger(t, log.LevelInfo)
 	l1F := &testutils.MockL1Source{}
+	l2F := &testutils.MockL2Client{}
 
 	rng := rand.New(rand.NewSource(1234))
 
@@ -96,7 +97,7 @@ func TestPlasmaFinalityData(t *testing.T) {
 	}
 
 	emitter := &testutils.MockEmitter{}
-	fi := NewPlasmaFinalizer(context.Background(), logger, cfg, l1F, emitter, plasmaBackend)
+	fi := NewPlasmaFinalizer(context.Background(), logger, cfg, l1F, l2F, emitter, plasmaBackend)
 	require.NotNil(t, plasmaBackend.forwardTo, "plasma backend must have access to underlying standard finalizer")
 
 	require.Equal(t, expFinalityLookback, cap(fi.finalityData))
@@ -175,6 +176,7 @@ func TestPlasmaFinalityData(t *testing.T) {
 			})
 			fi.OnEvent(TryFinalizeEvent{})
 			l1F.AssertExpectations(t)
+			l2F.AssertExpectations(t)
 			emitter.AssertExpectations(t)
 			require.Equal(t, commitmentInclusionFinalized.Number, finalizedL2.L1Origin.Number+1)
 			// Confirm finalization, so there will be no repeats of the PromoteFinalizedEvent

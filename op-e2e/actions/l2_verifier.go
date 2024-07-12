@@ -99,9 +99,9 @@ func NewL2Verifier(t Testing, log log.Logger, l1 derive.L1Fetcher, blobsSrc deri
 
 	var finalizer driver.Finalizer
 	if cfg.PlasmaEnabled() {
-		finalizer = finality.NewPlasmaFinalizer(ctx, log, cfg, l1, synchronousEvents, plasmaSrc)
+		finalizer = finality.NewPlasmaFinalizer(ctx, log, cfg, l1, eng, synchronousEvents, plasmaSrc)
 	} else {
-		finalizer = finality.NewFinalizer(ctx, log, cfg, l1, synchronousEvents)
+		finalizer = finality.NewFinalizer(ctx, log, cfg, l1, eng, synchronousEvents)
 	}
 
 	attributesHandler := attributes.NewAttributesHandler(log, cfg, ctx, eng, synchronousEvents)

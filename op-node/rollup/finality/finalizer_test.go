@@ -190,8 +190,11 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil)
 		l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil)
 
+		l2F := &testutils.MockL2Client{}
+		defer l2F.AssertExpectations(t)
+
 		emitter := &testutils.MockEmitter{}
-		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, emitter)
+		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, l2F, emitter)
 
 		// now say C1 was included in D and became the new safe head
 		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC1, DerivedFrom: refD})
@@ -224,8 +227,11 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil) // to check finality signal
 		l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil) // to check what was derived from (same in this case)
 
+		l2F := &testutils.MockL2Client{}
+		defer l2F.AssertExpectations(t)
+
 		emitter := &testutils.MockEmitter{}
-		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, emitter)
+		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, l2F, emitter)
 
 		// now say C1 was included in D and became the new safe head
 		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC1, DerivedFrom: refD})
@@ -263,8 +269,11 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		l1F := &testutils.MockL1Source{}
 		defer l1F.AssertExpectations(t)
 
+		l2F := &testutils.MockL2Client{}
+		defer l2F.AssertExpectations(t)
+
 		emitter := &testutils.MockEmitter{}
-		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, emitter)
+		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, l2F, emitter)
 
 		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC1, DerivedFrom: refD})
 		fi.OnEvent(derive.DeriverIdleEvent{Origin: refD})
@@ -348,8 +357,11 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil) // check the signal
 		l1F.ExpectL1BlockRefByNumber(refC.Number, refC, nil) // check what we derived the L2 block from
 
+		l2F := &testutils.MockL2Client{}
+		defer l2F.AssertExpectations(t)
+
 		emitter := &testutils.MockEmitter{}
-		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, emitter)
+		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, l2F, emitter)
 
 		// now say B1 was included in C and became the new safe head
 		fi.OnEvent(engine.SafeDerivedEvent{Safe: refB1, DerivedFrom: refC})
@@ -384,8 +396,11 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		l1F.ExpectL1BlockRefByNumber(refF.Number, refF, nil) // check signal
 		l1F.ExpectL1BlockRefByNumber(refE.Number, refE, nil) // post-reorg
 
+		l2F := &testutils.MockL2Client{}
+		defer l2F.AssertExpectations(t)
+
 		emitter := &testutils.MockEmitter{}
-		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, emitter)
+		fi := NewFinalizer(context.Background(), logger, &rollup.Config{}, l1F, l2F, emitter)
 
 		// now say B1 was included in C and became the new safe head
 		fi.OnEvent(engine.SafeDerivedEvent{Safe: refB1, DerivedFrom: refC})

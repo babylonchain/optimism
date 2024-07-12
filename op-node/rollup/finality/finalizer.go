@@ -69,8 +69,12 @@ type FinalizerL1Interface interface {
 	L1BlockRefByNumber(context.Context, uint64) (eth.L1BlockRef, error)
 }
 
+type FinalizerL2Interface interface {
+	L2BlockRefByNumber(context.Context, uint64) (eth.L2BlockRef, error)
+}
+
 type BabylonFinalityClient interface {
-	QueryIsBlockBabylonFinalized(queryParams *sdk.L2Block) (bool, error)
+	QueryBlockRangeBabylonFinalized(queryBlocks []*sdk.L2Block) (*uint64, error)
 }
 
 type Finalizer struct {
@@ -100,11 +104,13 @@ type Finalizer struct {
 
 	l1Fetcher FinalizerL1Interface
 
+	l2Fetcher FinalizerL2Interface
+
 	// babylonFinalityClient is the Babylon DA SDK client
 	babylonFinalityClient BabylonFinalityClient
 }
 
-func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fetcher FinalizerL1Interface, emitter rollup.EventEmitter) *Finalizer {
+func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fetcher FinalizerL1Interface, l2Fetcher FinalizerL2Interface, emitter rollup.EventEmitter) *Finalizer {
 	lookback := calcFinalityLookback(cfg)
 
 	// Initialize the Babylon Finality client
@@ -135,6 +141,7 @@ func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fet
 		finalityData:          make([]FinalityData, 0, lookback),
 		finalityLookback:      lookback,
 		l1Fetcher:             l1Fetcher,
+		l2Fetcher:             l2Fetcher,
 		emitter:               emitter,
 		babylonFinalityClient: babylonFinalityClient,
 	}
@@ -236,20 +243,36 @@ func (fi *Finalizer) tryFinalize() {
 	// go through the latest inclusion data, and find the last L2 block that was derived from a finalized L1 block
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			// check if fd.L2Block.Number is finalized on Babylon
-			queryParams := &sdk.L2Block{
-				BlockHeight:    fd.L2Block.Number,
-				BlockHash:      fd.L2Block.Hash.String(),
-				BlockTimestamp: fd.L2Block.Time,
+			// If there are any L2 blocks that are not finalized, then we can't finalize the later ones.
+			// This is because we need to finalize the L2 blocks in order.
+			blockCount := int(fd.L2Block.Number - finalizedL2.Number)
+			l2Blocks := make(map[uint64]eth.L2BlockRef)
+			queryBlocks := make([]*sdk.L2Block, blockCount)
+			for i := 0; i < blockCount; i++ {
+				blockNumber := uint64(i) + finalizedL2.Number + uint64(1)
+				l2Block, err := fi.l2Fetcher.L2BlockRefByNumber(fi.ctx, blockNumber)
+				if err != nil {
+					fi.emitter.Emit(rollup.EngineTemporaryErrorEvent{Err: fmt.Errorf("failed to check if on finalizing L2 chain, could not fetch block %d: %w", blockNumber, err)})
+					return
+				}
+				l2Blocks[blockNumber] = l2Block
+
+				queryBlocks[i] = &sdk.L2Block{
+					BlockHeight:    l2Block.Number,
+					BlockHash:      l2Block.Hash.String(),
+					BlockTimestamp: l2Block.Time,
+				}
+				fi.log.Debug(
+					"babylon gadget query params",
+					"block_height", queryBlocks[i].BlockHeight,
+					"block_hash", queryBlocks[i].BlockHash,
+					"block_timestamp", queryBlocks[i].BlockTimestamp,
+				)
+
 			}
-			fi.log.Debug(
-				"babylon gadget query params",
-				"block_height", queryParams.BlockHeight,
-				"block_hash", queryParams.BlockHash,
-				"block_timestamp", queryParams.BlockTimestamp,
-			)
-			babylonFinalized, err := fi.babylonFinalityClient.QueryIsBlockBabylonFinalized(queryParams)
-			fi.log.Debug("babylon gadget query result", "babylon_finalized", babylonFinalized)
+			// query the last finalized block in the block range on Babylon
+			lastFinalizedBlockNumber, err := fi.babylonFinalityClient.QueryBlockRangeBabylonFinalized(queryBlocks)
+			fi.log.Debug("babylon gadget query result", "babylon_finalized_block_number", lastFinalizedBlockNumber)
 
 			// If the error encountered is of type NoFpHasVotingPowerError, it should be ignored;
 			// for any other error types, emit a critical error event.
@@ -258,11 +281,14 @@ func (fi *Finalizer) tryFinalize() {
 				return
 			}
 
-			// set finalized status
-			if babylonFinalized {
-				fi.log.Debug("set finalized status", "l2_block", fd.L2Block)
-				finalizedL2 = fd.L2Block
-				finalizedDerivedFrom = fd.L1Block
+			// set finalized block(s)
+			if lastFinalizedBlockNumber != nil {
+				for finalizedBlockNumber := *lastFinalizedBlockNumber; finalizedBlockNumber > finalizedL2.Number; finalizedBlockNumber-- {
+					finalizedL2Block := l2Blocks[*lastFinalizedBlockNumber]
+					fi.log.Debug("set finalized block", "l2_block", finalizedL2Block)
+					finalizedL2 = finalizedL2Block
+					finalizedDerivedFrom = fd.L1Block
+				}
 			}
 			// keep iterating, there may be later L2 blocks that can also be finalized
 		}
