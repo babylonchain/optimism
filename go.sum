@@ -292,8 +292,8 @@ github.com/aws/aws-sdk-go v1.44.122/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX
 github.com/aws/aws-sdk-go v1.44.312 h1:llrElfzeqG/YOLFFKjg1xNpZCFJ2xraIi3PqSuP+95k=
 github.com/aws/aws-sdk-go v1.44.312/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
 github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZwxzkQq9wy+g=
-github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240712003149-d6ec4cbe811d h1:tsgyq8phnqpsTsq3sZxuYTJEDhzdsm2NZPrRUDJx86M=
-github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240712003149-d6ec4cbe811d/go.mod h1:tsFvb/ZnQpBNtXmiCHoClBu/QRPLuCSr2lncexlhQSQ=
+github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240716025522-a7f8cd19f44f h1:FykJmDmmw5CypzzNBskqDugs9HvIXpJ+vxa0J0jzPlA=
+github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240716025522-a7f8cd19f44f/go.mod h1:UkRb1walvNDdEF4fcJVz+M1t7Ok62PkayI40BtxYOGI=
 github.com/babylonchain/babylon-private v0.8.6-0.20240705135310-e91ff7f60ead h1:LyyrFtdSbx0a5ZLHA/qMNMjAxZltfnNJgj5+uEgqZdI=
 github.com/babylonchain/babylon-private v0.8.6-0.20240705135310-e91ff7f60ead/go.mod h1:Tdi+29Y+DzCaaz0V0sBRXF1tXXLnH6JHJsOG8uktWLU=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
@@ -867,8 +867,8 @@ github.com/hashicorp/go-sockaddr v1.0.0/go.mod h1:7Xibr9yA9JjQq1JpNB2Vw7kxv8xerX
 github.com/hashicorp/go-syslog v1.0.0/go.mod h1:qPfqrKkXGihmCqbJM2mZgkZGvKG1dFdvsLplgctolz4=
 github.com/hashicorp/go-uuid v1.0.0/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
 github.com/hashicorp/go-uuid v1.0.1/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
-github.com/hashicorp/go-uuid v1.0.3 h1:2gKiV6YVmrJ1i2CKKa9obLvRieoRGviZFL26PcT/Co8=
-github.com/hashicorp/go-uuid v1.0.3/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
+github.com/hashicorp/go-uuid v1.0.2 h1:cfejS+Tpcp13yd5nYHWDI6qVCny6wyX2Mt5SGur2IGE=
+github.com/hashicorp/go-uuid v1.0.2/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
 github.com/hashicorp/go-version v1.2.0/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09ZGVZPK5anwXA=
 github.com/hashicorp/go-version v1.6.0 h1:feTTfFNnjP967rlCxM/I9g701jU+RN74YKx2mOkIeek=
 github.com/hashicorp/go-version v1.6.0/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09ZGVZPK5anwXA=

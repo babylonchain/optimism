@@ -14,8 +14,10 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/rollup/engine"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 
-	"github.com/babylonchain/babylon-finality-gadget/btcclient"
-	"github.com/babylonchain/babylon-finality-gadget/sdk"
+	"github.com/babylonchain/babylon-finality-gadget/sdk/btcclient"
+	sdkclient "github.com/babylonchain/babylon-finality-gadget/sdk/client"
+	sdkcfg "github.com/babylonchain/babylon-finality-gadget/sdk/config"
+	"github.com/babylonchain/babylon-finality-gadget/sdk/cwclient"
 )
 
 // defaultFinalityLookback defines the amount of L1<>L2 relations to track for finalization purposes, one per L1 block.
@@ -74,7 +76,7 @@ type FinalizerL2Interface interface {
 }
 
 type BabylonFinalityClient interface {
-	QueryBlockRangeBabylonFinalized(queryBlocks []*sdk.L2Block) (*uint64, error)
+	QueryBlockRangeBabylonFinalized(queryBlocks []*cwclient.L2Block) (*uint64, error)
 }
 
 type Finalizer struct {
@@ -116,18 +118,18 @@ func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fet
 	// Initialize the Babylon Finality client
 	btcConfig := btcclient.DefaultBTCConfig()
 	btcConfig.RPCHost = cfg.BabylonConfig.BitcoinRpc
-	config := &sdk.Config{
-		ChainType:    cfg.BabylonConfig.ChainType,
+	config := &sdkcfg.Config{
+		ChainID:      sdkcfg.BabylonLocalnet,
 		ContractAddr: cfg.BabylonConfig.ContractAddress,
 		BTCConfig:    btcConfig,
 	}
 	log.Debug(
 		"creating Babylon Finality client",
-		"chain_type", config.ChainType,
+		"chain_id", config.ChainID,
 		"contract_address", config.ContractAddr,
 		"btc_rpc_host", config.BTCConfig.RPCHost,
 	)
-	babylonFinalityClient, err := sdk.NewClient(config)
+	babylonFinalityClient, err := sdkclient.NewClient(config)
 	if err != nil {
 		emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf("failed to initialize Babylon Finality client: %w", err)})
 		return nil
@@ -247,7 +249,7 @@ func (fi *Finalizer) tryFinalize() {
 			// This is because we need to finalize the L2 blocks in order.
 			blockCount := int(fd.L2Block.Number - finalizedL2.Number)
 			l2Blocks := make(map[uint64]eth.L2BlockRef)
-			queryBlocks := make([]*sdk.L2Block, blockCount)
+			queryBlocks := make([]*cwclient.L2Block, blockCount)
 			for i := 0; i < blockCount; i++ {
 				blockNumber := uint64(i) + finalizedL2.Number + uint64(1)
 				l2Block, err := fi.l2Fetcher.L2BlockRefByNumber(fi.ctx, blockNumber)
@@ -257,7 +259,7 @@ func (fi *Finalizer) tryFinalize() {
 				}
 				l2Blocks[blockNumber] = l2Block
 
-				queryBlocks[i] = &sdk.L2Block{
+				queryBlocks[i] = &cwclient.L2Block{
 					BlockHeight:    l2Block.Number,
 					BlockHash:      l2Block.Hash.String(),
 					BlockTimestamp: l2Block.Time,
@@ -276,7 +278,7 @@ func (fi *Finalizer) tryFinalize() {
 
 			// If the error encountered is of type NoFpHasVotingPowerError, it should be ignored;
 			// for any other error types, emit a critical error event.
-			if err != nil && !errors.Is(err, sdk.ErrNoFpHasVotingPower) {
+			if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) {
 				fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf("failed to check if block %d is finalized on Babylon: %w", fd.L2Block.Number, err)})
 				return
 			}
