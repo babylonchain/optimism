@@ -245,54 +245,14 @@ func (fi *Finalizer) tryFinalize() {
 	// go through the latest inclusion data, and find the last L2 block that was derived from a finalized L1 block
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			// If there are any L2 blocks that are not finalized, then we can't finalize the later ones.
-			// This is because we need to finalize the L2 blocks in order.
-			blockCount := int(fd.L2Block.Number - finalizedL2.Number)
-			l2Blocks := make(map[uint64]eth.L2BlockRef)
-			queryBlocks := make([]*cwclient.L2Block, blockCount)
-			for i := 0; i < blockCount; i++ {
-				blockNumber := uint64(i) + finalizedL2.Number + uint64(1)
-				l2Block, err := fi.l2Fetcher.L2BlockRefByNumber(fi.ctx, blockNumber)
-				if err != nil {
-					fi.emitter.Emit(rollup.EngineTemporaryErrorEvent{Err: fmt.Errorf("failed to check if on finalizing L2 chain, could not fetch block %d: %w", blockNumber, err)})
-					return
-				}
-				l2Blocks[blockNumber] = l2Block
-
-				queryBlocks[i] = &cwclient.L2Block{
-					BlockHeight:    l2Block.Number,
-					BlockHash:      l2Block.Hash.String(),
-					BlockTimestamp: l2Block.Time,
-				}
-				fi.log.Debug(
-					"babylon gadget query params",
-					"block_height", queryBlocks[i].BlockHeight,
-					"block_hash", queryBlocks[i].BlockHash,
-					"block_timestamp", queryBlocks[i].BlockTimestamp,
-				)
-
-			}
-			// query the last finalized block in the block range on Babylon
-			lastFinalizedBlockNumber, err := fi.babylonFinalityClient.QueryBlockRangeBabylonFinalized(queryBlocks)
-			fi.log.Debug("babylon gadget query result", "babylon_finalized_block_number", lastFinalizedBlockNumber)
-
-			// If the error encountered is of type NoFpHasVotingPowerError, it should be ignored;
-			// for any other error types, emit a critical error event.
-			if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) {
-				fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf("failed to check if block %d is finalized on Babylon: %w", fd.L2Block.Number, err)})
+			var shouldContinue bool
+			shouldContinue, err := tryFinalizeOnConsecutiveBlockQuorom(fd, fi, &finalizedL2, &finalizedDerivedFrom)
+			if err != nil {
 				return
 			}
-
-			// set finalized block(s)
-			if lastFinalizedBlockNumber != nil {
-				for finalizedBlockNumber := *lastFinalizedBlockNumber; finalizedBlockNumber > finalizedL2.Number; finalizedBlockNumber-- {
-					finalizedL2Block := l2Blocks[*lastFinalizedBlockNumber]
-					fi.log.Debug("set finalized block", "l2_block", finalizedL2Block)
-					finalizedL2 = finalizedL2Block
-					finalizedDerivedFrom = fd.L1Block
-				}
+			if !shouldContinue {
+				break
 			}
-			// keep iterating, there may be later L2 blocks that can also be finalized
 		}
 	}
 	if finalizedDerivedFrom != (eth.BlockID{}) {
@@ -326,6 +286,98 @@ func (fi *Finalizer) tryFinalize() {
 		}
 		fi.emitter.Emit(engine.PromoteFinalizedEvent{Ref: finalizedL2})
 	}
+}
+
+/*
+ *  tryFinalizeOnConsecutiveBlockQuorom tries to finalize L2 blocks in consecutive order.
+ *
+ *  If there are any L2 blocks that are not finalized, then we can't finalize the later ones.
+ *  This is because we need to finalize the L2 blocks in order to guarantee consecutive quorom.
+ *
+ *  It queries the Babylon gadget to check if the L2 blocks are finalized.
+ *  If all the L2 blocks in the range are finalized, then it sets the last finalized
+ *  L2 block and the derived-from L1 block.
+ *
+ *  If some of the L2 blocks in the range are not finalized, then it stops iterating.
+ *
+ *  If the error encountered is of type NoFpHasVotingPowerError, it should be ignored;
+ *  for any other error types, emit an critical error event.
+ */
+func tryFinalizeOnConsecutiveBlockQuorom(
+	fd FinalityData,
+	fi *Finalizer,
+	finalizedL2 *eth.L2BlockRef,
+	finalizedDerivedFrom *eth.BlockID,
+) (bool, error) {
+	blockCount := int(fd.L2Block.Number - finalizedL2.Number)
+	l2Blocks := make(map[uint64]eth.L2BlockRef)
+	queryBlocks := make([]*cwclient.L2Block, blockCount)
+
+	for i := 0; i < blockCount; i++ {
+		blockNumber := uint64(i) + finalizedL2.Number + uint64(1)
+		l2Block, err := fi.l2Fetcher.L2BlockRefByNumber(fi.ctx, blockNumber)
+		if err != nil {
+			fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf(
+				"failed to check if block %d to %d is finalized on Babylon, could not fetch block %d: %w",
+				finalizedL2.Number+1,
+				fd.L2Block.Number,
+				blockNumber,
+				err,
+			)})
+			return false, err
+		}
+		l2Blocks[blockNumber] = l2Block
+
+		queryBlocks[i] = &cwclient.L2Block{
+			BlockHeight:    l2Block.Number,
+			BlockHash:      l2Block.Hash.String(),
+			BlockTimestamp: l2Block.Time,
+		}
+		fi.log.Debug(
+			"added block to babylon gadget's query params",
+			"block_height", queryBlocks[i].BlockHeight,
+			"block_hash", queryBlocks[i].BlockHash,
+			"block_timestamp", queryBlocks[i].BlockTimestamp,
+		)
+	}
+
+	lastFinalizedBlockNumber, err := fi.babylonFinalityClient.QueryBlockRangeBabylonFinalized(queryBlocks)
+
+	// TODO: we shouldn't skip on no voting power.
+	// https://github.com/babylonchain/babylon-finality-gadget/issues/59
+	if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) {
+		fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf(
+			"failed to check if block %d to %d is finalized on Babylon: %w",
+			finalizedL2.Number+1,
+			fd.L2Block.Number,
+			err,
+		)})
+		return false, err
+	}
+
+	// stop iterating to honor consecutive quorom
+	if lastFinalizedBlockNumber == nil {
+		fi.log.Debug(
+			"none of the l2 blocks in range is BTC finalized",
+			"l2_block_start", finalizedL2.Number+1,
+			"l2_block_end", fd.L2Block.Number,
+		)
+		return false, nil
+	}
+
+	// set finalized block(s)
+	finalizedL2Block := l2Blocks[*lastFinalizedBlockNumber]
+	fi.log.Debug("set finalized block", "l2_block", finalizedL2Block)
+	*finalizedL2 = finalizedL2Block
+	*finalizedDerivedFrom = fd.L1Block
+
+	// some blocks in the queried range is not BTC finalized, stop iterating to honor consecutive quorom
+	if finalizedL2.Number != fd.L2Block.Number {
+		return false, nil
+	}
+
+	// all queried blocks are BTC finalized, continue iterating
+	return true, nil
 }
 
 // onDerivedSafeBlock buffers the L1 block the safe head was fully derived from,
