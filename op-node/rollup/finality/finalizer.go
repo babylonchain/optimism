@@ -119,7 +119,7 @@ func NewFinalizer(ctx context.Context, log log.Logger, cfg *rollup.Config, l1Fet
 	btcConfig := btcclient.DefaultBTCConfig()
 	btcConfig.RPCHost = cfg.BabylonConfig.BitcoinRpc
 	config := &sdkcfg.Config{
-		ChainID:      sdkcfg.BabylonLocalnet,
+		ChainID:      cfg.BabylonConfig.ChainID,
 		ContractAddr: cfg.BabylonConfig.ContractAddress,
 		BTCConfig:    btcConfig,
 	}

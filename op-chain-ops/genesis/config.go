@@ -290,10 +290,10 @@ type DeployConfig struct {
 	// UseInterop is a flag that indicates if the system is using interop
 	UseInterop bool `json:"useInterop,omitempty"`
 
-	// BabylonFinalityGadgetChainType is the chain type for the Babylon finality gadget.
-	BabylonFinalityGadgetChainType int `json:"babylonFinalityGadgetChainType"`
+	// BabylonFinalityGadgetChainID is the Chain ID of the Babylon chain for the Babylon finality gadget
+	BabylonFinalityGadgetChainID string `json:"babylonFinalityGadgetChainID"`
 
-	// BabylonFinalityGadgetContractAddress is the contract address for the Babylon finality gadget on BabylonChain.
+	// BabylonFinalityGadgetContractAddress is the contract address for the Babylon finality gadget on Babylon chain.
 	BabylonFinalityGadgetContractAddress string `json:"babylonFinalityGadgetContractAddress"`
 
 	// BabylonFinalityGadgetBitcoinRpc is the Bitcoin RPC URL for the Babylon finality gadget.
@@ -667,7 +667,7 @@ func (d *DeployConfig) RollupConfig(l1StartBlock *types.Block, l2GenesisBlockHas
 		InteropTime:            d.InteropTime(l1StartBlock.Time()),
 		PlasmaConfig:           plasma,
 		BabylonConfig: &rollup.BabylonConfig{
-			ChainType:       d.BabylonFinalityGadgetChainType,
+			ChainID:         d.BabylonFinalityGadgetChainID,
 			ContractAddress: d.BabylonFinalityGadgetContractAddress,
 			BitcoinRpc:      d.BabylonFinalityGadgetBitcoinRpc,
 		},

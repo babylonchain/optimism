@@ -63,9 +63,9 @@ type PlasmaConfig struct {
 }
 
 type BabylonConfig struct {
-	// Chain type
-	ChainType int `json:"chain_type"`
-	// BabylonChain contract address
+	// Chain ID of the Babylon chain
+	ChainID string `json:"chain_id"`
+	// CosmWasm contract address deployed on the Babylon chain
 	ContractAddress string `json:"contract_address"`
 	// Bitcoin RPC url
 	BitcoinRpc string `json:"bitcoin_rpc"`
