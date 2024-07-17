@@ -245,7 +245,6 @@ func (fi *Finalizer) tryFinalize() {
 	// go through the latest inclusion data, and find the last L2 block that was derived from a finalized L1 block
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			var shouldContinue bool
 			shouldContinue, err := tryFinalizeOnConsecutiveBlockQuorom(fd, fi, &finalizedL2, &finalizedDerivedFrom)
 			if err != nil {
 				return
