@@ -353,7 +353,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 
 	// Test that finality progression can repeat a few times.
 	t.Run("repeat", func(t *testing.T) {
-		logger := testlog.Logger(t, log.LevelDebug)
+		logger := testlog.Logger(t, log.LevelInfo)
 		l1F := &testutils.MockL1Source{}
 		defer l1F.AssertExpectations(t)
 
