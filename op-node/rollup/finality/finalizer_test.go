@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/stretchr/testify/require"
 
 	"github.com/babylonchain/babylon-finality-gadget/sdk/cwclient"
 	"github.com/babylonchain/babylon-finality-gadget/testutil/mocks"
@@ -582,103 +583,168 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		emitter.AssertExpectations(t)
 	})
 
-	// TODO: Fix this test
 	// Test that reorg race condition is handled.
-	// t.Run("reorg-safe", func(t *testing.T) {
-	// 	logger := testlog.Logger(t, log.LevelInfo)
-	// 	l1F := &testutils.MockL1Source{}
-	// 	defer l1F.AssertExpectations(t)
-	// 	l1F.ExpectL1BlockRefByNumber(refF.Number, refF, nil) // check signal
-	// 	l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil) // shows reorg to Finalize attempt
-	// 	l1F.ExpectL1BlockRefByNumber(refF.Number, refF, nil) // check signal
-	// 	l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil) // shows reorg to OnDerivationL1End attempt
-	// 	l1F.ExpectL1BlockRefByNumber(refF.Number, refF, nil) // check signal
-	// 	l1F.ExpectL1BlockRefByNumber(refE.Number, refE, nil) // post-reorg
+	t.Run("reorg-safe", func(t *testing.T) {
+		logger := testlog.Logger(t, log.LevelInfo)
+		l1F := &testutils.MockL1Source{}
+		defer l1F.AssertExpectations(t)
+		l1F.ExpectL1BlockRefByNumber(refF.Number, refF, nil) // check signal
+		l1F.ExpectL1BlockRefByNumber(refC.Number, refC, nil) // shows reorg to Finalize attempt
 
-	// 	l2F := &testutils.MockL2Client{}
-	// 	defer l2F.AssertExpectations(t)
+		l1F.ExpectL1BlockRefByNumber(refF.Number, refF, nil) // check signal
+		l1F.ExpectL1BlockRefByNumber(refC.Number, refC, nil) // shows reorg to OnDerivationL1End attempt
 
-	// 	emitter := &testutils.MockEmitter{}
-	// 	fi := NewFinalizer(context.Background(), logger, &rollup.Config{BabylonConfig: babylonCfg}, l1F, l2F, emitter)
+		l1F.ExpectL1BlockRefByNumber(refF.Number, refF, nil) // check signal
+		l1F.ExpectL1BlockRefByNumber(refE.Number, refE, nil) // post-reorg
 
-	// 	// now say B1 was included in C and became the new safe head
-	// 	fi.OnEvent(engine.SafeDerivedEvent{Safe: refB1, DerivedFrom: refC})
-	// 	fi.OnEvent(derive.DeriverIdleEvent{Origin: refC})
-	// 	emitter.AssertExpectations(t)
+		l2F := &testutils.MockL2Client{}
+		defer l2F.AssertExpectations(t)
+		l2F.ExpectL2BlockRefByNumber(refA1.Number, refA1, nil)
+		l2F.ExpectL2BlockRefByNumber(refB0.Number, refB0, nil)
+		l2F.ExpectL2BlockRefByNumber(refB1.Number, refB1, nil)
 
-	// 	// temporary fork of the L1, and derived safe L2 blocks from.
-	// 	refC0Alt := eth.L2BlockRef{
-	// 		Hash:           testutils.RandomHash(rng),
-	// 		Number:         refB1.Number + 1,
-	// 		ParentHash:     refB1.Hash,
-	// 		Time:           refB1.Time + cfg.BlockTime,
-	// 		L1Origin:       refC.ID(),
-	// 		SequenceNumber: 0,
-	// 	}
-	// 	refC1Alt := eth.L2BlockRef{
-	// 		Hash:           testutils.RandomHash(rng),
-	// 		Number:         refC0Alt.Number + 1,
-	// 		ParentHash:     refC0Alt.Hash,
-	// 		Time:           refC0Alt.Time + cfg.BlockTime,
-	// 		L1Origin:       refC.ID(),
-	// 		SequenceNumber: 1,
-	// 	}
-	// 	refDAlt := eth.L1BlockRef{
-	// 		Hash:       testutils.RandomHash(rng),
-	// 		Number:     refC.Number + 1,
-	// 		ParentHash: refC.Hash,
-	// 		Time:       refC.Time + l1Time,
-	// 	}
-	// 	fi.OnEvent(engine.SafeDerivedEvent{Safe: refC0Alt, DerivedFrom: refDAlt})
-	// 	fi.OnEvent(engine.SafeDerivedEvent{Safe: refC1Alt, DerivedFrom: refDAlt})
+		l2F.ExpectL2BlockRefByNumber(refA1.Number, refA1, nil)
+		l2F.ExpectL2BlockRefByNumber(refB0.Number, refB0, nil)
+		l2F.ExpectL2BlockRefByNumber(refB1.Number, refB1, nil)
 
-	// 	// We get an early finality signal for F, of the chain that did not include refC0Alt and refC1Alt,
-	// 	// as L1 block F does not build on DAlt.
-	// 	// The finality signal was for a new chain, while derivation is on an old stale chain.
-	// 	// It should be detected that C0Alt and C1Alt cannot actually be finalized,
-	// 	// even though they are older than the latest finality signal.
-	// 	emitter.ExpectOnce(TryFinalizeEvent{})
-	// 	fi.OnEvent(FinalizeL1Event{FinalizedL1: refF})
-	// 	emitter.AssertExpectations(t)
-	// 	// cannot verify refC0Alt and refC1Alt, and refB1 is older and not checked
-	// 	emitter.ExpectOnceType("ResetEvent")
-	// 	fi.OnEvent(TryFinalizeEvent{})
-	// 	emitter.AssertExpectations(t) // no change in finality
+		l2F.ExpectL2BlockRefByNumber(refA1.Number, refA1, nil)
+		l2F.ExpectL2BlockRefByNumber(refB0.Number, refB0, nil)
+		l2F.ExpectL2BlockRefByNumber(refB1.Number, refB1, nil)
+		l2F.ExpectL2BlockRefByNumber(refC0.Number, refC0, nil)
 
-	// 	// And process DAlt, still stuck on old chain.
+		ctl := gomock.NewController(t)
+		defer ctl.Finish()
+		sdkClient := mocks.NewMockISdkClient(ctl)
 
-	// 	emitter.ExpectOnce(TryFinalizeEvent{})
-	// 	fi.OnEvent(derive.DeriverIdleEvent{Origin: refDAlt})
-	// 	emitter.AssertExpectations(t)
-	// 	// no new finalized L2 blocks after early finality signal with stale chain
-	// 	emitter.ExpectOnceType("ResetEvent")
-	// 	fi.OnEvent(TryFinalizeEvent{})
-	// 	emitter.AssertExpectations(t)
-	// 	// Now reset, because of the reset error
-	// 	fi.OnEvent(rollup.ResetEvent{})
-	// 	require.Equal(t, refF, fi.FinalizedL1(), "remember the new finality signal for later however")
+		emitter := &testutils.MockEmitter{}
+		fi := NewFinalizer(context.Background(), logger, &rollup.Config{BabylonConfig: babylonCfg}, l1F, l2F, emitter)
+		fi.babylonFinalityClient = sdkClient
 
-	// 	// And process the canonical chain, with empty block D (no post-processing of canonical C0 blocks yet)
-	// 	emitter.ExpectOnce(TryFinalizeEvent{})
-	// 	fi.OnEvent(derive.DeriverIdleEvent{Origin: refD})
-	// 	emitter.AssertExpectations(t)
-	// 	fi.OnEvent(TryFinalizeEvent{})
-	// 	emitter.AssertExpectations(t) // no new finality
+		// now say B1 was included in C and became the new safe head
+		refCAlt := eth.L1BlockRef{
+			Hash:       testutils.RandomHash(rng),
+			Number:     refB.Number + 1,
+			ParentHash: refB.Hash,
+			Time:       refB.Time + l1Time,
+		}
+		fi.OnEvent(engine.SafeDerivedEvent{Safe: refB1, DerivedFrom: refCAlt})
+		fi.OnEvent(derive.DeriverIdleEvent{Origin: refCAlt})
+		emitter.AssertExpectations(t)
 
-	// 	// Include C0 in E
-	// 	fi.OnEvent(engine.SafeDerivedEvent{Safe: refC0, DerivedFrom: refE})
-	// 	fi.OnEvent(derive.DeriverIdleEvent{Origin: refE})
-	// 	// Due to the "finalityDelay" we don't repeat finality checks shortly after one another,
-	// 	// and don't expect a finality attempt.
-	// 	emitter.AssertExpectations(t)
+		// temporary fork of the L1, and derived safe L2 blocks from.
+		refC0Alt := eth.L2BlockRef{
+			Hash:           testutils.RandomHash(rng),
+			Number:         refB1.Number + 1,
+			ParentHash:     refB1.Hash,
+			Time:           refB1.Time + cfg.BlockTime,
+			L1Origin:       refC.ID(),
+			SequenceNumber: 0,
+		}
+		refC1Alt := eth.L2BlockRef{
+			Hash:           testutils.RandomHash(rng),
+			Number:         refC0Alt.Number + 1,
+			ParentHash:     refC0Alt.Hash,
+			Time:           refC0Alt.Time + cfg.BlockTime,
+			L1Origin:       refC.ID(),
+			SequenceNumber: 1,
+		}
+		refDAlt := eth.L1BlockRef{
+			Hash:       testutils.RandomHash(rng),
+			Number:     refC.Number + 1,
+			ParentHash: refC.Hash,
+			Time:       refC.Time + l1Time,
+		}
+		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC0Alt, DerivedFrom: refDAlt})
+		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC1Alt, DerivedFrom: refDAlt})
 
-	// 	// if we reset the attempt, then we can finalize however.
-	// 	fi.triedFinalizeAt = 0
-	// 	emitter.ExpectOnce(TryFinalizeEvent{})
-	// 	fi.OnEvent(derive.DeriverIdleEvent{Origin: refE})
-	// 	emitter.AssertExpectations(t)
-	// 	emitter.ExpectOnce(engine.PromoteFinalizedEvent{Ref: refC0})
-	// 	fi.OnEvent(TryFinalizeEvent{})
-	// 	emitter.AssertExpectations(t)
-	// })
+		queryBlocks := make([]*cwclient.L2Block, refB1.Number)
+		queryBlocks[0] = &cwclient.L2Block{
+			BlockHeight:    refA1.Number,
+			BlockHash:      refA1.Hash.String(),
+			BlockTimestamp: refA1.Time,
+		}
+		queryBlocks[1] = &cwclient.L2Block{
+			BlockHeight:    refB0.Number,
+			BlockHash:      refB0.Hash.String(),
+			BlockTimestamp: refB0.Time,
+		}
+		queryBlocks[2] = &cwclient.L2Block{
+			BlockHeight:    refB1.Number,
+			BlockHash:      refB1.Hash.String(),
+			BlockTimestamp: refB1.Time,
+		}
+		sdkClient.EXPECT().QueryBlockRangeBabylonFinalized(queryBlocks).Return(&refB0.Number, nil).AnyTimes()
+
+		// We get an early finality signal for F, of the chain that did not include refC0Alt and refC1Alt,
+		// as L1 block F does not build on DAlt.
+		// The finality signal was for a new chain, while derivation is on an old stale chain.
+		// It should be detected that C0Alt and C1Alt cannot actually be finalized,
+		// even though they are older than the latest finality signal.
+		emitter.ExpectOnce(TryFinalizeEvent{})
+		fi.OnEvent(FinalizeL1Event{FinalizedL1: refF})
+		emitter.AssertExpectations(t)
+		// cannot verify refC0Alt and refC1Alt, and refB1 is older and not checked
+		emitter.ExpectOnceType("ResetEvent")
+		fi.OnEvent(TryFinalizeEvent{})
+		emitter.AssertExpectations(t) // no change in finality
+
+		// And process DAlt, still stuck on old chain.
+
+		emitter.ExpectOnce(TryFinalizeEvent{})
+		fi.OnEvent(derive.DeriverIdleEvent{Origin: refDAlt})
+		emitter.AssertExpectations(t)
+		// no new finalized L2 blocks after early finality signal with stale chain
+		emitter.ExpectOnceType("ResetEvent")
+		fi.OnEvent(TryFinalizeEvent{})
+		emitter.AssertExpectations(t)
+		// Now reset, because of the reset error
+		fi.OnEvent(rollup.ResetEvent{})
+		require.Equal(t, refF, fi.FinalizedL1(), "remember the new finality signal for later however")
+
+		// And process the canonical chain, with empty block D (no post-processing of canonical C0 blocks yet)
+		emitter.ExpectOnce(TryFinalizeEvent{})
+		fi.OnEvent(derive.DeriverIdleEvent{Origin: refD})
+		emitter.AssertExpectations(t)
+		fi.OnEvent(TryFinalizeEvent{})
+		emitter.AssertExpectations(t) // no new finality
+
+		// Include C0 in E
+		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC0, DerivedFrom: refE})
+		fi.OnEvent(derive.DeriverIdleEvent{Origin: refE})
+		// Due to the "finalityDelay" we don't repeat finality checks shortly after one another,
+		// and don't expect a finality attempt.
+		emitter.AssertExpectations(t)
+
+		queryBlocksTwo := make([]*cwclient.L2Block, refC0.Number)
+		queryBlocksTwo[0] = &cwclient.L2Block{
+			BlockHeight:    refA1.Number,
+			BlockHash:      refA1.Hash.String(),
+			BlockTimestamp: refA1.Time,
+		}
+		queryBlocksTwo[1] = &cwclient.L2Block{
+			BlockHeight:    refB0.Number,
+			BlockHash:      refB0.Hash.String(),
+			BlockTimestamp: refB0.Time,
+		}
+		queryBlocksTwo[2] = &cwclient.L2Block{
+			BlockHeight:    refB1.Number,
+			BlockHash:      refB1.Hash.String(),
+			BlockTimestamp: refB1.Time,
+		}
+		queryBlocksTwo[3] = &cwclient.L2Block{
+			BlockHeight:    refC0.Number,
+			BlockHash:      refC0.Hash.String(),
+			BlockTimestamp: refC0.Time,
+		}
+		sdkClient.EXPECT().QueryBlockRangeBabylonFinalized(queryBlocksTwo).Return(&refC0.Number, nil)
+
+		// if we reset the attempt, then we can finalize however.
+		fi.triedFinalizeAt = 0
+		emitter.ExpectOnce(TryFinalizeEvent{})
+		fi.OnEvent(derive.DeriverIdleEvent{Origin: refE})
+		emitter.AssertExpectations(t)
+		emitter.ExpectOnce(engine.PromoteFinalizedEvent{Ref: refC0})
+		fi.OnEvent(TryFinalizeEvent{})
+		emitter.AssertExpectations(t)
+	})
 }
