@@ -344,7 +344,7 @@ func tryFinalizeOnConsecutiveBlockQuorom(
 
 	// TODO: we shouldn't skip on no voting power.
 	// https://github.com/babylonchain/babylon-finality-gadget/issues/59
-	if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) {
+	if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) && lastFinalizedBlockNumber != nil {
 		fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf(
 			"failed to check if block %d to %d is finalized on Babylon: %w",
 			finalizedL2.Number+1,
