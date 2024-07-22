@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/andybalholm/brotli v1.1.0
-	github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240716025522-a7f8cd19f44f
+	github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240722061210-54480a6216c7
 	github.com/btcsuite/btcd v0.24.2
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
 	github.com/cockroachdb/pebble v1.1.0
@@ -42,6 +42,7 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
+	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.24.0
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
 	golang.org/x/sync v0.7.0
@@ -350,7 +351,6 @@ require (
 	go.uber.org/automaxprocs v1.5.2 // indirect
 	go.uber.org/dig v1.17.1 // indirect
 	go.uber.org/fx v1.21.1 // indirect
-	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
