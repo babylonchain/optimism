@@ -262,6 +262,7 @@ func (fi *Finalizer) tryFinalize() {
 			if lastFinalizedBlock.Number != fd.L2Block.Number {
 				break
 			}
+			// keep iterating, there may be later L2 blocks that can also be finalized
 		}
 	}
 	if finalizedDerivedFrom != (eth.BlockID{}) {

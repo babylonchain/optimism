@@ -98,7 +98,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 	babylonCfg := &rollup.BabylonConfig{
 		ChainID:         "chain-test",
 		ContractAddress: "bbn1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfsa3n3gc",
-		BitcoinRpc:      "https://rpc.ankr.com/btc",
+		BitcoinRpc:      "https://rpc.this-is-a-mock.com/btc",
 	}
 	cfg.BabylonConfig = babylonCfg
 
