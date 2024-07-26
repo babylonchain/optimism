@@ -245,11 +245,13 @@ func (fi *Finalizer) tryFinalize() {
 	// go through the latest inclusion data, and find the last L2 block that was derived from a finalized L1 block
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			shouldContinue, err := tryFinalizeOnConsecutiveBlockQuorom(fd, fi, &finalizedL2, &finalizedDerivedFrom)
+			lastFinalizedBlockNumber, err := tryFinalizeOnConsecutiveBlockQuorom(fd, fi, &finalizedL2, &finalizedDerivedFrom)
 			if err != nil {
 				return
 			}
-			if !shouldContinue {
+			// some blocks in the queried range is not BTC finalized, stop iterating to honor consecutive quorom
+			// all queried blocks are BTC finalized, continue iterating
+			if lastFinalizedBlockNumber == nil || *lastFinalizedBlockNumber != fd.L2Block.Number {
 				break
 			}
 		}
@@ -307,7 +309,7 @@ func tryFinalizeOnConsecutiveBlockQuorom(
 	fi *Finalizer,
 	finalizedL2 *eth.L2BlockRef,
 	finalizedDerivedFrom *eth.BlockID,
-) (bool, error) {
+) (*uint64, error) {
 	blockCount := int(fd.L2Block.Number - finalizedL2.Number)
 	l2Blocks := make(map[uint64]eth.L2BlockRef)
 	queryBlocks := make([]*cwclient.L2Block, blockCount)
@@ -323,7 +325,7 @@ func tryFinalizeOnConsecutiveBlockQuorom(
 				blockNumber,
 				err,
 			)})
-			return false, err
+			return nil, err
 		}
 		l2Blocks[blockNumber] = l2Block
 
@@ -344,14 +346,21 @@ func tryFinalizeOnConsecutiveBlockQuorom(
 
 	// TODO: we shouldn't skip on no voting power.
 	// https://github.com/babylonchain/babylon-finality-gadget/issues/59
-	if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) && lastFinalizedBlockNumber != nil {
+	if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) {
+		if lastFinalizedBlockNumber != nil {
+			// set finalized block(s)
+			finalizedL2Block := l2Blocks[*lastFinalizedBlockNumber]
+			fi.log.Debug("set finalized block", "l2_block", finalizedL2Block)
+			*finalizedL2 = finalizedL2Block
+			*finalizedDerivedFrom = fd.L1Block
+		}
 		fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf(
 			"failed to check if block %d to %d is finalized on Babylon: %w",
 			finalizedL2.Number+1,
 			fd.L2Block.Number,
 			err,
 		)})
-		return false, err
+		return nil, err
 	}
 
 	// stop iterating to honor consecutive quorom
@@ -361,7 +370,7 @@ func tryFinalizeOnConsecutiveBlockQuorom(
 			"l2_block_start", finalizedL2.Number+1,
 			"l2_block_end", fd.L2Block.Number,
 		)
-		return false, nil
+		return nil, nil
 	}
 
 	// set finalized block(s)
@@ -370,13 +379,7 @@ func tryFinalizeOnConsecutiveBlockQuorom(
 	*finalizedL2 = finalizedL2Block
 	*finalizedDerivedFrom = fd.L1Block
 
-	// some blocks in the queried range is not BTC finalized, stop iterating to honor consecutive quorom
-	if finalizedL2.Number != fd.L2Block.Number {
-		return false, nil
-	}
-
-	// all queried blocks are BTC finalized, continue iterating
-	return true, nil
+	return lastFinalizedBlockNumber, nil
 }
 
 // onDerivedSafeBlock buffers the L1 block the safe head was fully derived from,
