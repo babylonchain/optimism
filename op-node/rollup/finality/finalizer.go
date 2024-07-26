@@ -353,6 +353,8 @@ func tryFinalizeOnConsecutiveBlockQuorom(
 			fi.log.Debug("set finalized block", "l2_block", finalizedL2Block)
 			*finalizedL2 = finalizedL2Block
 			*finalizedDerivedFrom = fd.L1Block
+
+			return lastFinalizedBlockNumber, nil
 		}
 		fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf(
 			"failed to check if block %d to %d is finalized on Babylon: %w",
