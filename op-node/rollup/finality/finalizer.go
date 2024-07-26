@@ -245,15 +245,11 @@ func (fi *Finalizer) tryFinalize() {
 	// go through the latest inclusion data, and find the last L2 block that was derived from a finalized L1 block
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			lastFinalizedBlock, hasErr := fi.findLastFinalizedL2BlockWithConsecutiveQuorom(fd.L2Block.Number, finalizedL2.Number)
+			lastFinalizedBlock := fi.findLastFinalizedL2BlockWithConsecutiveQuorom(fd.L2Block.Number, finalizedL2.Number)
 
 			// set finalized block(s)
 			if lastFinalizedBlock != (eth.L2BlockRef{}) {
 				finalizedL2, finalizedDerivedFrom = fi.updateFinalized(lastFinalizedBlock, lastFinalizedBlock.L1Origin)
-			}
-
-			if hasErr {
-				return
 			}
 
 			// some blocks in the queried range is not BTC finalized, stop iterating to honor consecutive quorom
@@ -305,13 +301,11 @@ func (fi *Finalizer) tryFinalize() {
  *  It queries the Babylon gadget to check if the L2 blocks are finalized.
  *  If the error encountered is of type NoFpHasVotingPowerError, it should be ignored;
  *  for any other error types, emit an critical error event.
- *
- *  It returns the last finalized L2 block and a boolean indicating if there is an error.
  */
 func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 	fdL2BlockNumber uint64,
 	finalizedL2Number uint64,
-) (eth.L2BlockRef, bool) {
+) eth.L2BlockRef {
 	blockCount := int(fdL2BlockNumber - finalizedL2Number)
 	l2Blocks := make(map[uint64]eth.L2BlockRef)
 	queryBlocks := make([]*cwclient.L2Block, blockCount)
@@ -327,7 +321,7 @@ func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 				blockNumber,
 				err,
 			)})
-			return eth.L2BlockRef{}, true
+			return eth.L2BlockRef{}
 		}
 		l2Blocks[blockNumber] = l2Block
 
@@ -351,7 +345,7 @@ func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 	if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) {
 		if lastFinalizedBlockNumber != nil {
 			fi.log.Warn("Received error but also had the finalized block", "error", err, "blockNumber", *lastFinalizedBlockNumber)
-			return l2Blocks[*lastFinalizedBlockNumber], true
+			return l2Blocks[*lastFinalizedBlockNumber]
 		}
 		fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf(
 			"failed to check if block %d to %d is finalized on Babylon: %w",
@@ -359,10 +353,10 @@ func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 			fdL2BlockNumber,
 			err,
 		)})
-		return eth.L2BlockRef{}, true
+		return eth.L2BlockRef{}
 	}
 
-	return l2Blocks[*lastFinalizedBlockNumber], false
+	return l2Blocks[*lastFinalizedBlockNumber]
 }
 
 func (fi *Finalizer) updateFinalized(lastFinalizedBlock eth.L2BlockRef, fdL1Block eth.BlockID) (eth.L2BlockRef, eth.BlockID) {
