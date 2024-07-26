@@ -3,6 +3,7 @@ package finality
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/rand" // nosemgrep
 	"testing"
 
@@ -743,6 +744,80 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		emitter.ExpectOnce(TryFinalizeEvent{})
 		fi.OnEvent(derive.DeriverIdleEvent{Origin: refE})
 		emitter.AssertExpectations(t)
+		emitter.ExpectOnce(engine.PromoteFinalizedEvent{Ref: refC0})
+		fi.OnEvent(TryFinalizeEvent{})
+		emitter.AssertExpectations(t)
+	})
+
+	// We expect the L1 block that the partially finalized L2 data was derived from to be checked,
+	// to be sure it is part of the canonical chain, after the finalization signal.
+	t.Run("partially", func(t *testing.T) {
+		logger := testlog.Logger(t, log.LevelInfo)
+		l1F := &testutils.MockL1Source{}
+		defer l1F.AssertExpectations(t)
+		l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil)
+		l1F.ExpectL1BlockRefByNumber(refD.Number, refD, nil)
+
+		l2F := &testutils.MockL2Client{}
+		defer l2F.AssertExpectations(t)
+		l2F.ExpectL2BlockRefByNumber(refA1.Number, refA1, nil)
+		l2F.ExpectL2BlockRefByNumber(refB0.Number, refB0, nil)
+		l2F.ExpectL2BlockRefByNumber(refB1.Number, refB1, nil)
+		l2F.ExpectL2BlockRefByNumber(refC0.Number, refC0, nil)
+		l2F.ExpectL2BlockRefByNumber(refC1.Number, refC1, nil)
+
+		ctl := gomock.NewController(t)
+		defer ctl.Finish()
+		sdkClient := mocks.NewMockISdkClient(ctl)
+		queryBlocks := make([]*cwclient.L2Block, refC1.Number)
+		queryBlocks[0] = &cwclient.L2Block{
+			BlockHeight:    refA1.Number,
+			BlockHash:      refA1.Hash.String(),
+			BlockTimestamp: refA1.Time,
+		}
+		queryBlocks[1] = &cwclient.L2Block{
+			BlockHeight:    refB0.Number,
+			BlockHash:      refB0.Hash.String(),
+			BlockTimestamp: refB0.Time,
+		}
+		queryBlocks[2] = &cwclient.L2Block{
+			BlockHeight:    refB1.Number,
+			BlockHash:      refB1.Hash.String(),
+			BlockTimestamp: refB1.Time,
+		}
+		queryBlocks[3] = &cwclient.L2Block{
+			BlockHeight:    refC0.Number,
+			BlockHash:      refC0.Hash.String(),
+			BlockTimestamp: refC0.Time,
+		}
+		queryBlocks[4] = &cwclient.L2Block{
+			BlockHeight:    refC1.Number,
+			BlockHash:      refC1.Hash.String(),
+			BlockTimestamp: refC1.Time,
+		}
+		sdkClient.EXPECT().QueryBlockRangeBabylonFinalized(queryBlocks).Return(&refC0.Number, fmt.Errorf("RPC rate limit error"))
+
+		emitter := &testutils.MockEmitter{}
+		fi := NewFinalizer(context.Background(), logger, &rollup.Config{BabylonConfig: babylonCfg}, l1F, l2F, emitter)
+		fi.babylonFinalityClient = sdkClient
+
+		// now say C1 was included in D and became the new safe head
+		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC1, DerivedFrom: refD})
+		fi.OnEvent(derive.DeriverIdleEvent{Origin: refD})
+		emitter.AssertExpectations(t)
+
+		// now say D0 was included in E and became the new safe head
+		fi.OnEvent(engine.SafeDerivedEvent{Safe: refD0, DerivedFrom: refE})
+		fi.OnEvent(derive.DeriverIdleEvent{Origin: refE})
+		emitter.AssertExpectations(t)
+
+		// Let's finalize D from which we fully derived C1, but not D0
+		// This will trigger an attempt of L2 finalization.
+		emitter.ExpectOnce(TryFinalizeEvent{})
+		fi.OnEvent(FinalizeL1Event{FinalizedL1: refD})
+		emitter.AssertExpectations(t)
+
+		// C0 was included in finalized D, and should now be finalized
 		emitter.ExpectOnce(engine.PromoteFinalizedEvent{Ref: refC0})
 		fi.OnEvent(TryFinalizeEvent{})
 		emitter.AssertExpectations(t)
