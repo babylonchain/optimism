@@ -77,6 +77,7 @@ type FinalizerL2Interface interface {
 
 type BabylonFinalityClient interface {
 	QueryBlockRangeBabylonFinalized(queryBlocks []*cwclient.L2Block) (*uint64, error)
+	QueryBtcStakingActivatedTimestamp() (uint64, error)
 }
 
 type Finalizer struct {
@@ -239,6 +240,12 @@ func (fi *Finalizer) tryFinalize() {
 	fi.mu.Lock()
 	defer fi.mu.Unlock()
 
+	gadgetActivatedTimestamp, err := fi.babylonFinalityClient.QueryBtcStakingActivatedTimestamp()
+	if err != nil && !errors.Is(err, sdkclient.ErrBtcStakingNotActivated) {
+		fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf("failed to query BTC staking activated timestamp: %w", err)})
+		return
+	}
+
 	// overwritten if we finalize
 	finalizedL2 := fi.lastFinalizedL2 // may be zeroed if nothing was finalized since startup.
 	var finalizedDerivedFrom eth.BlockID
@@ -246,7 +253,8 @@ func (fi *Finalizer) tryFinalize() {
 	fi.log.Debug("try finalize", "finality_data", fi.finalityData, "last_finalized_l2", finalizedL2)
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			lastFinalizedBlock := fi.findLastFinalizedL2BlockWithConsecutiveQuorom(fd.L2Block.Number, finalizedL2.Number)
+			lastFinalizedBlock := fi.findLastFinalizedL2BlockWithConsecutiveQuorom(
+				fd.L2Block.Number, finalizedL2.Number, gadgetActivatedTimestamp)
 
 			// set finalized block(s)
 			if lastFinalizedBlock != nil {
@@ -313,10 +321,12 @@ func (fi *Finalizer) tryFinalize() {
 func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 	fdL2BlockNumber uint64, // candidate L2 block number to finalize
 	finalizedL2Number uint64, // last finalized L2 block number
+	gadgetActivatedTimestamp uint64, // BTC staking activated timestamp
 ) *eth.L2BlockRef {
 	blockCount := int(fdL2BlockNumber - finalizedL2Number)
 	l2Blocks := make(map[uint64]eth.L2BlockRef)
-	queryBlocks := make([]*cwclient.L2Block, blockCount)
+	queryBlocks := make([]*cwclient.L2Block, 0, blockCount)
+	var largestNonActivatedBlock *eth.L2BlockRef
 
 	for i := 0; i < blockCount; i++ {
 		blockNumber := uint64(i) + finalizedL2Number + uint64(1)
@@ -333,11 +343,17 @@ func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 		}
 		l2Blocks[blockNumber] = l2Block
 
-		queryBlocks[i] = &cwclient.L2Block{
+		// only query blocks after the gadget is activated
+		if l2Block.Time < gadgetActivatedTimestamp {
+			largestNonActivatedBlock = &l2Block
+			continue
+		}
+
+		queryBlocks = append(queryBlocks, &cwclient.L2Block{
 			BlockHeight:    l2Block.Number,
 			BlockHash:      l2Block.Hash.String(),
 			BlockTimestamp: l2Block.Time,
-		}
+		})
 		fi.log.Debug(
 			"added block to babylon gadget's query params",
 			"block_height", queryBlocks[i].BlockHeight,
@@ -346,12 +362,15 @@ func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 		)
 	}
 
+	// btc staking is not activated yet, so we don't need to check quorum to finalize the blocks
+	if len(queryBlocks) == 0 {
+		return largestNonActivatedBlock
+	}
+
 	lastFinalizedBlockNumber, err := fi.babylonFinalityClient.QueryBlockRangeBabylonFinalized(queryBlocks)
 	fi.log.Debug("QueryBlockRangeBabylonFinalized", "lastFinalizedBlockNumber", lastFinalizedBlockNumber)
 
-	// TODO: we shouldn't skip on no voting power.
-	// https://github.com/babylonchain/babylon-finality-gadget/issues/59
-	if err != nil && !errors.Is(err, sdkclient.ErrNoFpHasVotingPower) {
+	if err != nil {
 		// on CriticalError, the chain will get stuck because
 		// op-e2e/actions/l2_verifier.go will detect it and panic
 		fi.emitter.Emit(rollup.CriticalErrorEvent{Err: fmt.Errorf(
@@ -363,11 +382,10 @@ func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
 	}
 
 	if lastFinalizedBlockNumber != nil {
-		if block, ok := l2Blocks[*lastFinalizedBlockNumber]; ok {
-			return &block
-		}
+		res := l2Blocks[*lastFinalizedBlockNumber]
+		return &res
 	}
-	return nil
+	return largestNonActivatedBlock
 }
 
 // onDerivedSafeBlock buffers the L1 block the safe head was fully derived from,

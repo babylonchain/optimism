@@ -210,6 +210,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		defer ctl.Finish()
 		sdkClient := mocks.NewMockISdkClient(ctl)
 		fi.babylonFinalityClient = sdkClient
+		mockActivatedTimestamp(sdkClient)
 		mockQueryBlockRangeBabylonFinalizedWithTimes(sdkClient, 1, refA1, refB0, refB1, refC0, refC1)
 
 		// now say C1 was included in D and became the new safe head
@@ -253,6 +254,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		defer ctl.Finish()
 		sdkClient := mocks.NewMockISdkClient(ctl)
 		fi.babylonFinalityClient = sdkClient
+		mockActivatedTimestamp(sdkClient)
 		mockQueryBlockRangeBabylonFinalizedWithTimes(sdkClient, 2, refA1, refB0, refB1, refC0, refC1)
 
 		// now say C1 was included in D and became the new safe head
@@ -300,6 +302,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		defer ctl.Finish()
 		sdkClient := mocks.NewMockISdkClient(ctl)
 		fi.babylonFinalityClient = sdkClient
+		mockActivatedTimestamp(sdkClient)
 
 		fi.OnEvent(engine.SafeDerivedEvent{Safe: refC1, DerivedFrom: refD})
 		fi.OnEvent(derive.DeriverIdleEvent{Origin: refD})
@@ -399,6 +402,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		defer ctl.Finish()
 		sdkClient := mocks.NewMockISdkClient(ctl)
 		fi.babylonFinalityClient = sdkClient
+		mockActivatedTimestamp(sdkClient)
 		mockQueryBlockRangeBabylonFinalizedWithTimes(sdkClient, 1, refA1, refB0, refB1)
 
 		// now say B1 was included in C and became the new safe head
@@ -442,6 +446,7 @@ func TestEngineQueue_Finalize(t *testing.T) {
 		ctl := gomock.NewController(t)
 		defer ctl.Finish()
 		sdkClient := mocks.NewMockISdkClient(ctl)
+		mockActivatedTimestamp(sdkClient)
 		fi.babylonFinalityClient = sdkClient
 
 		// now say B1 was included in C and became the new safe head
@@ -549,4 +554,8 @@ func mockQueryBlockRangeBabylonFinalizedWithTimes(sdkClient *mocks.MockISdkClien
 		}
 	}
 	sdkClient.EXPECT().QueryBlockRangeBabylonFinalized(queryBlocks).Return(&refs[len(refs)-1].Number, nil).Times(times)
+}
+
+func mockActivatedTimestamp(sdkClient *mocks.MockISdkClient) {
+	sdkClient.EXPECT().QueryBtcStakingActivatedTimestamp().Return(uint64(0), nil).AnyTimes()
 }
