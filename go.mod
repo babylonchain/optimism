@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/andybalholm/brotli v1.1.0
-	github.com/babylonchain/babylon-finality-gadget v0.1.3-alpha.0.20240730030819-d80e151444f4
+	github.com/babylonlabs-io/babylon-finality-gadget v0.0.0-20240731203740-07d2ddabc4fb
 	github.com/btcsuite/btcd v0.24.2
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
 	github.com/cockroachdb/pebble v1.1.0
@@ -74,7 +74,7 @@ require (
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
 	github.com/CosmWasm/wasmd v0.51.0 // indirect
-	github.com/CosmWasm/wasmvm/v2 v2.0.0 // indirect
+	github.com/CosmWasm/wasmvm/v2 v2.0.1 // indirect
 	github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -106,7 +106,7 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
-	github.com/cometbft/cometbft v0.38.6 // indirect
+	github.com/cometbft/cometbft v0.38.7 // indirect
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/containerd/cgroups v1.1.0 // indirect
@@ -120,7 +120,7 @@ require (
 	github.com/cosmos/gogoproto v1.4.12 // indirect
 	github.com/cosmos/iavl v1.1.2 // indirect
 	github.com/cosmos/ibc-go/modules/capability v1.0.0 // indirect
-	github.com/cosmos/ibc-go/v8 v8.2.0 // indirect
+	github.com/cosmos/ibc-go/v8 v8.3.0 // indirect
 	github.com/cosmos/ics23/go v0.10.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.3 // indirect
 	github.com/cosmos/relayer/v2 v2.5.2 // indirect
@@ -378,7 +378,7 @@ require (
 )
 
 replace (
-	github.com/babylonchain/babylon => github.com/babylonchain/babylon-private v0.8.6-0.20240705135310-e91ff7f60ead
+	github.com/babylonchain/babylon => github.com/babylonlabs-io/babylon-private v0.9.0-rc.2.0.20240717044248-3d8f190c9b0c
 	github.com/cockroachdb/pebble => github.com/cockroachdb/pebble v0.0.0-20231018212520-f6cde3fc2fa4
 	github.com/ethereum/go-ethereum => github.com/ethereum-optimism/op-geth v1.101315.3-rc.1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1

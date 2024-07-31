@@ -11,8 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/babylonchain/babylon-finality-gadget/sdk/cwclient"
-	"github.com/babylonchain/babylon-finality-gadget/testutil/mocks"
+	"github.com/babylonlabs-io/babylon-finality-gadget/sdk/cwclient"
+	"github.com/babylonlabs-io/babylon-finality-gadget/testutil/mocks"
 	"github.com/ethereum-optimism/optimism/op-node/rollup"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/engine"

@@ -14,10 +14,10 @@ import (
 	"github.com/ethereum-optimism/optimism/op-node/rollup/engine"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
 
-	"github.com/babylonchain/babylon-finality-gadget/sdk/btcclient"
-	sdkclient "github.com/babylonchain/babylon-finality-gadget/sdk/client"
-	sdkcfg "github.com/babylonchain/babylon-finality-gadget/sdk/config"
-	"github.com/babylonchain/babylon-finality-gadget/sdk/cwclient"
+	"github.com/babylonlabs-io/babylon-finality-gadget/sdk/btcclient"
+	sdkclient "github.com/babylonlabs-io/babylon-finality-gadget/sdk/client"
+	sdkcfg "github.com/babylonlabs-io/babylon-finality-gadget/sdk/config"
+	"github.com/babylonlabs-io/babylon-finality-gadget/sdk/cwclient"
 )
 
 // defaultFinalityLookback defines the amount of L1<>L2 relations to track for finalization purposes, one per L1 block.
@@ -253,7 +253,7 @@ func (fi *Finalizer) tryFinalize() {
 	fi.log.Debug("try finalize", "finality_data", fi.finalityData, "last_finalized_l2", finalizedL2)
 	for _, fd := range fi.finalityData {
 		if fd.L2Block.Number > finalizedL2.Number && fd.L1Block.Number <= fi.finalizedL1.Number {
-			lastFinalizedBlock := fi.findLastFinalizedL2BlockWithConsecutiveQuorom(
+			lastFinalizedBlock := fi.findLastBtcFinalizedL2Block(
 				fd.L2Block.Number, finalizedL2.Number, gadgetActivatedTimestamp)
 
 			// set finalized block(s)
@@ -305,7 +305,7 @@ func (fi *Finalizer) tryFinalize() {
 }
 
 /*
- *  findLastFinalizedL2BlockWithConsecutiveQuorom tries to find the last finalized L2 block with consecutive quorom
+ *  findLastBtcFinalizedL2Block tries to find the last finalized L2 block with consecutive quorom
  *
  *  If there are any L2 blocks that are not finalized, then we can't finalize the later ones.
  *  This is because we need to finalize the L2 blocks in order to guarantee consecutive quorom.
@@ -318,7 +318,7 @@ func (fi *Finalizer) tryFinalize() {
  *
  *  If there is an error, it returns immediately with the last finalized L2 block that has no error.
  */
-func (fi *Finalizer) findLastFinalizedL2BlockWithConsecutiveQuorom(
+func (fi *Finalizer) findLastBtcFinalizedL2Block(
 	fdL2BlockNumber uint64, // candidate L2 block number to finalize
 	finalizedL2Number uint64, // last finalized L2 block number
 	gadgetActivatedTimestamp uint64, // BTC staking activated timestamp
